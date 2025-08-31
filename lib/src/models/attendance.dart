@@ -12,6 +12,9 @@ class Attendance extends ObjectWithNameAndId {
   String? qr;
   int? placeId;
   int? processed;
+  int? posId;
+  int? configId;
+
 
   Attendance({
     super.id,
@@ -21,6 +24,8 @@ class Attendance extends ObjectWithNameAndId {
     this.qr,
     this.placeId,
     this.processed,
+    this.posId,
+    this.configId,
   });
 
 
@@ -32,6 +37,9 @@ class Attendance extends ObjectWithNameAndId {
     qr: json["qr"],
     placeId: json["place_id"],
     processed: json["processed"],
+    posId: json["pos_id"],
+    configId: json["config_id"],
+
   );
 
   @override
@@ -43,6 +51,9 @@ class Attendance extends ObjectWithNameAndId {
     "qr":qr,
     "place_id":placeId,
     "processed":processed,
+    "pos_id":posId,
+    "config_id":configId,
+
   };
   static List<Attendance> fromJsonList(List<dynamic> list){
     List<Attendance> newList =[];

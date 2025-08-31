@@ -19,22 +19,28 @@ class WebPage extends StatelessWidget { // <--- NOW STATELESS
     );
 
     return Scaffold(
-      body: Stack(
-        children: [
-          WebViewWidget(
-            controller: controller.webViewController,
-          ),
-          Obx(() { // Obx widget from GetX listens to reactive variables
-            if (controller.loadingPercentage.value < 100) {
-              return LinearProgressIndicator(
-                value: controller.loadingPercentage.value / 100.0,
-              );
-            } else {
-              // Return an empty widget when loading is complete
-              return const SizedBox.shrink();
-            }
-          }),
-        ],
+      appBar: AppBar(
+        title: Text(url),
+
+      ),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            WebViewWidget(
+              controller: controller.webViewController,
+            ),
+            Obx(() { // Obx widget from GetX listens to reactive variables
+              if (controller.loadingPercentage.value < 100) {
+                return LinearProgressIndicator(
+                  value: controller.loadingPercentage.value / 100.0,
+                );
+              } else {
+                // Return an empty widget when loading is complete
+                return const SizedBox.shrink();
+              }
+            }),
+          ],
+        ),
       ),
     );
   }

@@ -4,18 +4,24 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:solexpress_panel_sc/src/data/memory_panel_sc.dart';
 import 'package:solexpress_panel_sc/src/data/messages.dart';
+import 'package:solexpress_panel_sc/src/models/sol_express_event.dart';
 import '../../data/memory.dart';
-import '../../idempiere/common/idempiere_controller_model.dart';
 import '../../models/host.dart';
 import '../../models/idempiere/idempiere_user.dart';
-import '../attendance/show/show_attendance_controller.dart';
+import '../../models/panel_sc_config.dart';
+import '../../models/pos.dart';
+import '../attendance/common/panel_controller_model.dart';
 
 
-class PanelScLoginController extends IdempiereControllerModel{
+class PanelScLoginController extends PanelControllerModel{
 
   TextEditingController userNameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController panelIdController = TextEditingController();
+  TextEditingController posIdController = TextEditingController();
+  TextEditingController fontSizeAdjustmentController = TextEditingController();
+  TextEditingController logoSizeAdjustmentController = TextEditingController();
+  TextEditingController clockRightMarginAdjustmentController = TextEditingController();
   var showPassword = false.obs;
   var isTestMode = false.obs;
   var rememberMe = true.obs;
@@ -30,10 +36,18 @@ class PanelScLoginController extends IdempiereControllerModel{
   var attendancePanel = Memory.TYPE_OF_PANEL == Memory.EVENT_PANEL ? true.obs : false.obs;
 
   PanelScLoginController(){
+    MemoryPanelSc.panelScConfig = PanelScConfig();
+    MemoryPanelSc.pos = Pos();
+    MemoryPanelSc.event = SolExpressEvent();
 
     userNameController.text = MemoryPanelSc.defaultUserName;
     passwordController.text = MemoryPanelSc.defaultPassword;
     panelIdController.text = MemoryPanelSc.defaultPanelId;
+
+    fontSizeAdjustmentController.text = MemoryPanelSc.defaultFontSizeAdjustment;
+    logoSizeAdjustmentController.text = MemoryPanelSc.defaultLogoSizeAdjustment;
+    clockRightMarginAdjustmentController.text = MemoryPanelSc.defaultClockRightMarginAdjustment;
+
     isLoading.value = false;
     Host host = getSavedHost();
     if(host.id==null){
@@ -82,6 +96,29 @@ class PanelScLoginController extends IdempiereControllerModel{
     if(panelId.isNotEmpty){
       panelIdController.text = panelId;
     }
+    String posId = GetStorage().read(Memory.KEY_POS_ID) ?? MemoryPanelSc.defaultPosId;
+    if(posId.isNotEmpty){
+      posIdController.text = posId.toUpperCase();
+    }
+
+    String aux = GetStorage().read(Memory.KEY_FONT_SIZE_ADJUSTMENT) ?? '';
+    if(aux.isNotEmpty){
+      fontSizeAdjustmentController.text = aux;
+    }
+
+    aux = GetStorage().read(Memory.KEY_LOGO_SIZE_ADJUSTMENT) ?? '';
+    if(aux.isNotEmpty){
+      logoSizeAdjustmentController.text = aux;
+    }
+
+
+    aux = GetStorage().read(Memory.KEY_CLOCK_RIGHT_MARGIN_ADJUSTMENT) ?? '';
+    if(aux.isNotEmpty){
+      clockRightMarginAdjustmentController.text = aux;
+    }
+
+
+
     onlyTv.value = GetStorage().read(Memory.KEY_ONLY_TV) ?? false;
 
     int functionId = GetStorage().read(Memory.KEY_FUNCTION) ?? 0;
@@ -108,9 +145,82 @@ class PanelScLoginController extends IdempiereControllerModel{
   }
 
  Future<void>  login(BuildContext context) async{
+
     String panelId = panelIdController.text.trim();
+    if(panelId.isEmpty){
+      showErrorMessages(Messages.ID);
+      return ;
+    }
+    int? aux = int.tryParse(panelId);
+    if(aux==null){
+      showErrorMessages(Messages.ID);
+      return ;
+    }
+    GetStorage().write(Memory.KEY_ID, panelId);
+    GetStorage().write(Memory.KEY_EVENT_ID, panelId);
+
+
     autoLogin.value = false;
-    if(idFunction.value == MemoryPanelSc.showAttendanceFunctionPanelSc.id.toString()){
+    if(attendancePanel.value){
+      String posId = posIdController.text.trim();
+      if(posId.isNotEmpty){
+        int? aux = int.tryParse(posId);
+        if(aux==null){
+          showErrorMessages(Messages.POS);
+          return ;
+        }
+        GetStorage().write(Memory.KEY_POS_ID, posId);
+      }
+      setAdjustment();
+      if(panelId.isEmpty){
+        showErrorMessages(Messages.ID);
+        return ;
+      }
+      int? aux = int.tryParse(panelId);
+      if(aux==null){
+        showErrorMessages(Messages.ID);
+        return ;
+      }
+      GetStorage().write(Memory.KEY_ID, panelId);
+      Memory.DB_NAME = MemoryPanelSc.DB_NAME;
+      isLoading.value = true;
+      bool b = await connectToPostgresAttendance();
+      isLoading.value = false;
+
+      if(!b){
+        showErrorMessages(Messages.LOGIN);
+        return;
+      }
+      if(MemoryPanelSc.pos.functionId == null || MemoryPanelSc.pos.functionId! <= 0){
+        DateTime now = DateTime.now();
+        String date = now.toIso8601String().split('T')[0];
+        String hint = '${Messages.ID} $posId $date ${Messages.NO_DATA_FOUND}';
+        showErrorMessages('$hint ${Messages.REVIEW_DATA_IN_DATABASE}');
+        return;
+      }
+      switch(MemoryPanelSc.pos.functionId){
+        case MemoryPanelSc.FUNCTION_SHOW_ATTENDANCE:
+          Get.toNamed(Memory.ROUTE_PANEL_SC_SHOW_ATTENDANCE_PAGE);
+          break;
+        case MemoryPanelSc.FUNCTION_REGISTER_ATTENDANCE:
+          Get.toNamed(Memory.ROUTE_PANEL_SC_REGISTER_ATTENDANCE_PAGE);
+          break;
+        case MemoryPanelSc.FUNCTION_ADMIN_ATTENDANCE:
+          Get.toNamed(Memory.ROUTE_PANEL_ADMIN_ATTENDANCE_PAGE);
+          break;
+        default:
+          showErrorMessages('${Messages.FUNTION_NOT_ENABLED_YED} : ${Messages.POS} : ${MemoryPanelSc.pos.functionId!}');
+          return;
+
+      }
+
+      return;
+
+
+    }
+
+        /*if(idFunction.value == MemoryPanelSc.showAttendanceFunctionPanelSc.id.toString()){
+        setAdjustment();
         if(panelId.isEmpty){
           showErrorMessages(Messages.ID);
           return ;
@@ -120,7 +230,7 @@ class PanelScLoginController extends IdempiereControllerModel{
           showErrorMessages(Messages.ID);
           return ;
         }
-        GetStorage().write(Memory.KEY_ID, panelId);
+       GetStorage().write(Memory.KEY_ID, panelId);
        Memory.DB_NAME = MemoryPanelSc.DB_NAME;
        isLoading.value = true;
        bool b = await connectToPostgresAndLoadAttendance();
@@ -132,6 +242,7 @@ class PanelScLoginController extends IdempiereControllerModel{
 
 
     } else if(idFunction.value == MemoryPanelSc.registerAttendanceFunctionPanelSc.id.toString()){
+      setAdjustment();
       Memory.DB_NAME = MemoryPanelSc.DB_NAME;
       if(panelId.isEmpty){
         showErrorMessages(Messages.ID);
@@ -151,14 +262,7 @@ class PanelScLoginController extends IdempiereControllerModel{
       }
       return;
 
-    }
-
-
-
-
-
-
-
+    }*/
 
 
     String userName = userNameController.text.trim();
@@ -191,14 +295,7 @@ class PanelScLoginController extends IdempiereControllerModel{
             case MemoryPanelSc.FUNCTION_CALLER:
               Get.toNamed(Memory.ROUTE_PANEL_SC_CALLING_PAGE,arguments:{Memory.KEY_IDEMPIERE_USER:user});
               break;
-              case MemoryPanelSc.FUNCTION_SHOW_ATTENDANCE:
-              Get.toNamed(Memory.ROUTE_PANEL_SC_SHOW_ATTENDANCE_PAGE,arguments:{Memory.KEY_IDEMPIERE_USER:user});
-              break;
-              case  MemoryPanelSc.FUNCTION_REGISTER_ATTENDANCE:
-              Get.toNamed(Memory.ROUTE_PANEL_SC_REGISTER_ATTENDANCE_PAGE,arguments:{Memory.KEY_IDEMPIERE_USER:user});
-              break;
             default:
-              // Get.toNamed(Memory.ROUTE_IDEMPIERE_HOME_PAGE,arguments:{Memory.KEY_IDEMPIERE_USER:user});
               Get.toNamed(Memory.ROUTE_PANEL_SC_VIDEO_DOWNLOAD_PAGE,arguments:{Memory.KEY_IDEMPIERE_USER:user});
               break;
           }
@@ -368,6 +465,36 @@ class PanelScLoginController extends IdempiereControllerModel{
       print('-------------------stop clockTimer');
       MemoryPanelSc.panelScTimer!.cancel();
       MemoryPanelSc.panelScTimer = null;
+    }
+
+  }
+
+  void setAdjustment() {
+    if(fontSizeAdjustmentController.text.isNotEmpty){
+      String aux = fontSizeAdjustmentController.text.trim();
+      double? fontSizeAdjustment = double.tryParse(aux);
+      if(fontSizeAdjustment!=null){
+        GetStorage().write(Memory.KEY_FONT_SIZE_ADJUSTMENT, aux);
+        MemoryPanelSc.fontSizeAdjustment = fontSizeAdjustment/100;
+      }
+
+    }
+    if(logoSizeAdjustmentController.text.isNotEmpty){
+      String aux = logoSizeAdjustmentController.text.trim();
+      double? logoSizeAdjustment = double.tryParse(aux);
+      if(logoSizeAdjustment!=null){
+        GetStorage().write(Memory.KEY_LOGO_SIZE_ADJUSTMENT, aux);
+        MemoryPanelSc.logoSizeAdjustment = logoSizeAdjustment/100;
+      }
+    }
+    if(clockRightMarginAdjustmentController.text.isNotEmpty){
+      String aux = clockRightMarginAdjustmentController.text.trim();
+      double? clockRightMarginAdjustment = double.tryParse(aux);
+      if(clockRightMarginAdjustment!=null){
+        GetStorage().write(Memory.KEY_CLOCK_RIGHT_MARGIN_ADJUSTMENT, aux);
+        MemoryPanelSc.clockRightMarginAdjustment = clockRightMarginAdjustment;
+      }
+
     }
 
   }

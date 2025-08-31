@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../models/attendance_by_group.dart';
-import 'show_attendance_controller.dart';
+import 'show_attendance_live_controller.dart';
 import '../../../data/memory_panel_sc.dart';
 import '../../../data/messages.dart';
-class ShowAttendancePage extends StatelessWidget {
+class ShowAttendanceLivePage extends StatelessWidget {
 
-  late ShowAttendanceController con;
+  late ShowAttendanceLiveController con;
   int count = 0;
   final int defaultColumnsWidth = MemoryPanelSc.EVENT_PANEL_COLUMNS_WIDTH;
 
-  ShowAttendancePage({super.key});
+  ShowAttendanceLivePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    con = Get.put(ShowAttendanceController());
+    con = Get.put(ShowAttendanceLiveController());
     // Simulate API call or data loading
     double columns = MediaQuery.of(context).size.width/defaultColumnsWidth;
     if(columns>1){
@@ -29,8 +29,7 @@ class ShowAttendancePage extends StatelessWidget {
       
     } 
 
-    double screenHeight = MediaQuery.of(context).size.height;
-    bool screenHeightError = screenHeight<600;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
 
     });
@@ -55,9 +54,7 @@ class ShowAttendancePage extends StatelessWidget {
             con.signOut();
           },
           //color: Color(0xff2c3fc5),
-          child:  Obx(()=>screenHeightError ? Container(
-            child: screenHeightErrorPanel(context),
-          ) :SingleChildScrollView(
+          child:  Obx(()=>SingleChildScrollView(
             child: Container(
               height: MediaQuery.of(context).size.height,
               child: Column(
@@ -66,7 +63,7 @@ class ShowAttendancePage extends StatelessWidget {
                   SizedBox(height: 10,),
                   GestureDetector(
                       onTap: () {
-                        con.showEventConfigPage(context);
+                        con.goToEventConfigPage(context);
                       },
                       child: showTotalAttendance(context, con.attendanceByGroups)),
                   SizedBox(height: 10,),
@@ -329,16 +326,6 @@ class ShowAttendancePage extends StatelessWidget {
     count = 0;
     return LinearProgressIndicator(minHeight: 15,color: Colors.purple,);
 
-  }
-
-  Widget screenHeightErrorPanel(BuildContext context) {
-
-    return Center(
-       child: Padding(
-         padding: const EdgeInsets.all(8.0),
-         child: Text(Messages.SCREEN_HEIGHT_ERROR,),
-       )
-    );
   }
 
 

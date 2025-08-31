@@ -12,6 +12,7 @@ class PanelScLoginPage extends StatelessWidget {
   Color hoverColor = Colors.amber[200]!;
   PanelScLoginPage({super.key});
   final PanelScLoginController controller = Get.put(PanelScLoginController());
+  double fontSize = 15;
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +21,7 @@ class PanelScLoginPage extends StatelessWidget {
       controller.stopTimers();
       if (controller.autoLogin.value) {
         controller.login(context);
+        controller.loadedConfig = false;
       }
     });
     return Scaffold(
@@ -60,20 +62,66 @@ class PanelScLoginPage extends StatelessWidget {
           child: Column(
             spacing: 3,
             children: [
-              TextField(
-                controller: controller.panelIdController,
-                obscureText: false,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
+              Row(
+                spacing: 10,
+                children: [
+                  Text('POS',
+                      style: TextStyle(
+                          fontSize: fontSize, fontWeight: FontWeight.bold,
+                          color: Colors.black)),
+                  Spacer(),
+                  SizedBox(
+                    height: 50,
+                    width: 150,
+                    child: TextField(
+                      controller: controller.posIdController,
+                      obscureText: false,
+                      keyboardType: TextInputType.text,
+                      decoration: InputDecoration(
 
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: Messages.ID,
-                  prefixIcon: Icon(Icons.numbers),
-                  border: OutlineInputBorder(),
-                ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        hintText: Messages.POS,
+                        //prefixIcon: Icon(Icons.numbers),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+
+                ],
+
               ),
-              _dropDownFunction(),
+              Row(
+                spacing: 10,
+                children: [
+                  Text(Messages.EVENT,
+                      style: TextStyle(
+                          fontSize: fontSize, fontWeight: FontWeight.bold,
+                          color: Colors.black)),
+                  Spacer(),
+                  SizedBox(
+                    height: 50,
+                    width: 150,
+                    child: TextField(
+                      controller: controller.panelIdController,
+                      obscureText: false,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+
+                        filled: true,
+                        fillColor: Colors.white,
+                        hintText: Messages.EVENT,
+                        //prefixIcon: Icon(Icons.numbers),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+
+                ],
+
+              ),
+
+              //_dropDownFunction(),
 
               Row(
                 spacing: 6,
@@ -91,6 +139,7 @@ class PanelScLoginPage extends StatelessWidget {
                   ),
                   Text(Messages.AUTO_LOGIN,
                       style: TextStyle(
+                          fontSize: fontSize, fontWeight: FontWeight.bold,
                           color: Colors.black)),
 
                 ],
@@ -111,6 +160,7 @@ class PanelScLoginPage extends StatelessWidget {
                   ),
                   Text(Messages.TEST_MODE,
                       style: TextStyle(
+                        fontSize: fontSize, fontWeight: FontWeight.bold,
                           color: Colors.black)),
 
                 ],
@@ -130,6 +180,58 @@ class PanelScLoginPage extends StatelessWidget {
                   padding: EdgeInsets.symmetric(horizontal: 80, vertical: 10),
                 ),
               ),
+              Text('${Messages.FONT_SIZE_ADJUSTMENT} %',
+                  style: TextStyle(
+                      fontSize: fontSize, fontWeight: FontWeight.bold,
+                      color: Colors.black)
+              ),
+              TextField(
+                controller: controller.fontSizeAdjustmentController,
+                obscureText: false,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: '${Messages.FONT_SIZE_ADJUSTMENT} %',
+                  prefixIcon: Icon(Icons.percent),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              Text('${Messages.LOGO_SIZE_ADJUSTMENT} %', style: TextStyle(
+                  fontSize: fontSize, fontWeight: FontWeight.bold,
+                  color: Colors.black),),
+              TextField(
+                controller: controller.logoSizeAdjustmentController,
+                obscureText: false,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: '${Messages.LOGO_SIZE_ADJUSTMENT} %',
+                  prefixIcon: Icon(Icons.percent),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              Text(Messages.CLOCK_RIGHT_MARGIN_ADJUSTMENT,style: TextStyle(
+                  fontSize: fontSize, fontWeight: FontWeight.bold,
+                  color: Colors.black)),
+              TextField(
+                controller: controller.clockRightMarginAdjustmentController,
+                obscureText: false,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: Messages.CLOCK_RIGHT_MARGIN_ADJUSTMENT,
+                  prefixIcon: Icon(Icons.numbers),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+
+
 
             ],
           ),
@@ -373,7 +475,8 @@ class PanelScLoginPage extends StatelessWidget {
           Messages.SELECT_A_FUNCTION,
 
           style: TextStyle(
-
+              fontSize: fontSize,
+              fontWeight: FontWeight.bold,
               color: Colors.black
           ),
         ),

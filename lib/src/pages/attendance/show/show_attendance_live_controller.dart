@@ -10,7 +10,7 @@ import '../../../models/attendance_by_group.dart';
 import '../../../data/memory.dart';
 
 
-class ShowAttendanceController extends PanelControllerModel {
+class ShowAttendanceLiveController extends PanelControllerModel {
   List<AttendanceByGroup> attendanceByGroups = <AttendanceByGroup>[].obs;
   Timer? timer = MemoryPanelSc.readAttendanceTimer;
   Timer? clockTimer = MemoryPanelSc.clockTimer;
@@ -23,7 +23,8 @@ class ShowAttendanceController extends PanelControllerModel {
   double fontSizeMedium = MemoryPanelSc.fontSizeMedium;
 
 
-  ShowAttendanceController(){
+  ShowAttendanceLiveController(){
+    //showTotalAttendanceByEvent = Get.arguments[Memory.KEY_SHOW_TOTAL_ATTENDANCE_BY_EVENT] ?? false;
     DateTime now = DateTime.now();
     print(now.toIso8601String().substring(5,19));
     String time = now.toIso8601String().substring(5,19);
@@ -35,7 +36,7 @@ class ShowAttendanceController extends PanelControllerModel {
     }
 
   }
- @override
+ /*@override
   void onClose() {
     // TODO: implement onClose
    if(timer!=null && timer!.isActive){
@@ -58,7 +59,7 @@ class ShowAttendanceController extends PanelControllerModel {
    }
 
     super.onClose();
-  }
+  }*/
   @override
   dispose(){
     if(timer!=null && timer!.isActive){
@@ -121,24 +122,34 @@ class ShowAttendanceController extends PanelControllerModel {
         print(e);
       }
     }
-    /*Get.offNamedUntil(Memory.ROUTE_IDEMPIERE_LOGIN_PAGE,
-            (route) => route.settings.name == Memory.ROUTE_IDEMPIERE_LOGIN_PAGE); // ELIMINAR EL HISTORIAL DE PANTALLAS
-            */
-    Get.back();
+    Get.offNamedUntil(Memory.ROUTE_IDEMPIERE_LOGIN_PAGE,
+            (route) => false); // ELIMINAR EL HISTORIAL DE PANTALLAS
+
+   // Get.back();
 
   }
 
 
   Future<void> startTimerToRetrieveNewCalledAttendanceByGroups() async {
-
-    if(!isLoading.value){
-      isLoading.value = true ;
-      bool success = await connectToPostgresAndLoadAttendance();
-      if(success){
-        readAttendanceByGroup();
+    int interval =MemoryPanelSc.intervalToRetrieveNewCalledAttendanceByGroups;
+    timer = Timer.periodic(Duration(seconds:interval), (timer) async {
+      if(timerStopped){
+        timer.cancel();
+        print('------------------timer cancel ttsStopped $timerStopped');
+        return;
       }
-      isLoading.value = false ;
-    }
+      if(!isLoading.value){
+        isLoading.value = true ;
+        bool success = await connectToPostgresAndLoadAttendance();
+        if(success){
+          readAttendanceByGroup();
+        }
+
+        isLoading.value = false ;
+
+      }
+
+    });
     int intervalClock =MemoryPanelSc.intervalToRefreshClockInSecond;
     clockTimer = Timer.periodic(Duration(seconds: intervalClock), (timer) async {
       if(timerStopped){
@@ -147,6 +158,9 @@ class ShowAttendanceController extends PanelControllerModel {
         return;
       }
       DateTime now = DateTime.now();
+     /* print(now.timeZoneName); // Returns a timezone abbreviation (e.g., "EDT", "CST")
+      print(now.timeZoneOffset); // Returns the UTC offset (e.g., -04:00:00.000000)
+      print(now.toIso8601String().substring(5,19));*/
       String time = now.toIso8601String().substring(5,19);
       actualTime.value = time.replaceAll('T', ' ');
     });
@@ -173,10 +187,7 @@ class ShowAttendanceController extends PanelControllerModel {
 
   }
 
-  void showEventConfigPage(BuildContext context) {
 
-     Get.toNamed(Memory.ROUTE_PANEL_EVENT_CONFIG_PAGE);
-  }
 
 
 

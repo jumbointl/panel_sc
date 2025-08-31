@@ -4,20 +4,22 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:solexpress_panel_sc/src/models/sol_express_event.dart';
 import 'package:solexpress_panel_sc/src/models/panel_sc_config.dart';
 import 'package:solexpress_panel_sc/src/models/ticket.dart';
 
 import '../models/attendance_by_group.dart';
 import '../models/function_panel_sc.dart';
 import '../models/host.dart';
+import '../models/pos.dart';
 import 'memory.dart';
 import 'messages.dart';
 
 class MemoryPanelSc extends Memory {
   static const String ROUTE_PANEL_SC_ROLES_PAGE = '/panel_sc/roles';
-  static final double fontSizeExtraBig = 40;
-  static final double fontSizeBig = 20;
-  static final double fontSizeMedium = 14;
+  static double fontSizeExtraBig = 40;
+  static double fontSizeBig = 20;
+  static double fontSizeMedium = 14;
   static String DB_NAME= 'panel_sc.db';
   static String ROUTE_PANEL_SC_CALLING_PAGE='/panel_sc/calling';
   static String ROUTE_PANEL_SC_HOME_PAGE='/panel_sc/home';
@@ -55,6 +57,9 @@ class MemoryPanelSc extends Memory {
   static bool  repeatSpeaking = false;
 
   static PanelScConfig panelScConfig = PanelScConfig();
+  static PanelScConfig panelScConfigByEvent = PanelScConfig();
+  static Pos pos = Pos();
+  static SolExpressEvent event = SolExpressEvent();
   static String get configurationFileUrl {
     Host host = Host.fromGetStorage(GetStorage().read(Memory.KEY_APP_FILE_HOST_WITH_HTTP));
     String fileHost = fileHost1St;
@@ -97,6 +102,8 @@ class MemoryPanelSc extends Memory {
   static const int  FUNCTION_CALLER = 2;
   static const int  FUNCTION_SHOW_ATTENDANCE = 3;
   static const int  FUNCTION_REGISTER_ATTENDANCE = 4;
+  static const int  FUNCTION_ADMIN_ATTENDANCE = 5;
+
 
 
 
@@ -130,10 +137,10 @@ class MemoryPanelSc extends Memory {
   static List<AttendanceByGroup>attendanceByGroup =<AttendanceByGroup>[];
 
   static int intervalToRetrieveNewCalledAttendanceByGroups = 10;
-  static int intervalToShowProgressBar = 10;
+  static int intervalToShowProgressBar = 100;
 
-  static int lengthBarcode = 7;
-  static int lengthPlaceId = 2;
+  static int barcodeLength = 7;
+  static int placeIdLength = 2;
 
   static const int EVENT_PANEL_COLUMNS_WIDTH = 480;
 
@@ -150,8 +157,25 @@ class MemoryPanelSc extends Memory {
   static Timer? clockTimer;
 
   static int intervalToRefreshClockInSecond = 1;
+
+  static String defaultFontSizeAdjustment='100';
+  static String defaultLogoSizeAdjustment='100';
+  static String defaultClockRightMarginAdjustment='0';
+
+  static double fontSizeAdjustment=100;
+  static double logoSizeAdjustment=100;
+  static double clockRightMarginAdjustment=0;
+
+  static String WEB_URL = 'https://www.youtube.com/watch?v=icMPQ84mG1Y&t=7s';
+
+  static String ROUTE_WEB_VIEW_PAGE = Memory.ROUTE_WEB_VIEW_PAGE;
+
+  static var defaultPosId='1001';
+
+  static String defaultConfigId='1';
+
   static bool isValidCode(String value) {
-    if(value.length<lengthBarcode){
+    if(value.length<barcodeLength){
       return false;
     }
     return true;
@@ -181,5 +205,7 @@ class MemoryPanelSc extends Memory {
     }
 
   }
+  static bool timerStarted = false;
+  static bool timerStopped = false;
 
 }

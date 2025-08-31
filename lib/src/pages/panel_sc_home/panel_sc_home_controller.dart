@@ -11,10 +11,11 @@ import '../../models/panel_sc_config.dart';
 import '../../models/ticket.dart';
 import '../../data/memory.dart';
 
+import '../attendance/common/panel_controller_model.dart';
 import '../video/video_play_list_screen.dart';
 
 
-class PanelScHomeController extends IdempiereControllerModel {
+class PanelScHomeController extends PanelControllerModel {
   late FlutterTts flutterTts;
   late IdempiereUser user  ;
   final List<Ticket> callingTickets = MemoryPanelSc.callingTickets;

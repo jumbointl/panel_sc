@@ -8,16 +8,13 @@ String groupToJson(Group data) => json.encode(data.toJson());
 
 class Group extends ObjectWithNameAndId {
 
-  @override
-  int? id;
-  @override
-  String? name;
+
 
   Group({
-    this.id,
-    this.name,
-    active,
-  }): super(active: active);
+    super.id,
+    super.name,
+    super.active,
+  });
 
 
   factory Group.fromJson(Map<String, dynamic> json) => Group(

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:solexpress_panel_sc/src/models/sol_express_event.dart';
+
 import 'object_with_name_and_id.dart';
 
 PanelScConfig panelScConfigFromJson(String str) => PanelScConfig.fromJson(json.decode(str));
@@ -29,7 +31,12 @@ class PanelScConfig extends ObjectWithNameAndId{
   String? logoUrl;
   String? eventName;
   String? landingUrl;
-
+  int? barcodeLength;
+  int? placeIdLength;
+  int? timeOffsetMinutes;
+  String? eventDate;
+  int? eventId;
+  SolExpressEvent? event;
 
   PanelScConfig({
     super.id,
@@ -55,6 +62,14 @@ class PanelScConfig extends ObjectWithNameAndId{
     this.logoUrl,
     this.eventName,
     this.landingUrl,
+    this.barcodeLength,
+    this.placeIdLength,
+    this.timeOffsetMinutes,
+    this.eventDate,
+    this.eventId,
+    this.event,
+
+
   });
 
 
@@ -82,6 +97,12 @@ class PanelScConfig extends ObjectWithNameAndId{
     logoUrl: json["logo_url"],
     eventName: json["event_name"],
     landingUrl: json["landing_url"],
+    barcodeLength: json["barcode_length"],
+    placeIdLength: json["place_id_length"],
+    timeOffsetMinutes: json["time_offset_minutes"],
+    eventDate: json["event_date"],
+    eventId: json["event_id"],
+    event: SolExpressEvent.fromJson(json["event"]),
   );
   static List<PanelScConfig> fromJsonList(List<dynamic> list){
     List<PanelScConfig> newList =[];
@@ -122,5 +143,11 @@ class PanelScConfig extends ObjectWithNameAndId{
     "logo_url" : logoUrl,
     "event_name" : eventName,
     "landing_url" : landingUrl,
+    "barcode_length" : barcodeLength,
+    "place_id_length" : placeIdLength,
+    "time_offset_minutes" : timeOffsetMinutes,
+    "event_date" : eventDate,
+    "event_id" : eventId,
+    "event" : event?.toJson(),
   };
 }

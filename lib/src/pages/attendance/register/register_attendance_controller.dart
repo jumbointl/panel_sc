@@ -10,9 +10,10 @@ import 'package:sqflite/sqflite.dart';
 
 import '../../../data/memory.dart';
 import '../../../data/memory_panel_sc.dart';
-import '../../../utils/sqflite/database_event_panel.dart'; // For LogicalKeyboardKey
+import '../../../utils/sqflite/database_event_panel.dart';
+import '../common/panel_controller_model.dart'; // For LogicalKeyboardKey
 
-class RegisterAttendanceController extends IdempiereControllerModel {
+class RegisterAttendanceController extends PanelControllerModel {
   final RxSet<LogicalKeyboardKey> pressedKeys = <LogicalKeyboardKey>{}.obs;
   final RxString enteredText = ''.obs;
   final List<Attendance> attendances = <Attendance>[].obs;
@@ -62,6 +63,7 @@ class RegisterAttendanceController extends IdempiereControllerModel {
   void signOut() async {
     MemoryPanelSc.attendanceByGroup.clear();
     timerStopped = true;
+    loadedConfig = false;
     if(timer!=null && timer!.isActive){
       try{
         timer!.cancel();
@@ -153,6 +155,11 @@ class RegisterAttendanceController extends IdempiereControllerModel {
       showErrorMessages(Messages.NO_REGISTERED);
       return;
     }
+    int aux = MemoryPanelSc.panelScConfig.barcodeLength ?? MemoryPanelSc.barcodeLength;
+    if(value.length>aux){
+      value = value.substring(value.length-aux);
+
+    }
     value = newValue;
     print('Scanned value: $value');
     insertAttendance(value);
@@ -171,10 +178,15 @@ class RegisterAttendanceController extends IdempiereControllerModel {
       return;
     }
     if(MemoryPanelSc.isValidCode(value)){
+      int aux = MemoryPanelSc.panelScConfig.barcodeLength ?? MemoryPanelSc.barcodeLength;
+      if(value.length>aux){
+        value = value.substring(value.length-aux);
+
+      }
 
       int? id = await databaseEventPanel.insertIntoScanned(db, value);
       if(id!=null){
-        int? placeId = int.tryParse(value.substring(0, MemoryPanelSc.lengthPlaceId));
+        int? placeId = int.tryParse(value.substring(0, MemoryPanelSc.placeIdLength));
         Attendance attendance = Attendance(placeId: placeId,qr: value);
         int rows = MemoryPanelSc.ROWS_SCANNED_TO_SHOW ;
         attendances.insert(0,attendance);
@@ -209,7 +221,8 @@ class RegisterAttendanceController extends IdempiereControllerModel {
       }
       if(!isLoading.value){
         isLoading.value = true ;
-        List<Attendance>? aux = await databaseEventPanel.getUnprocessedAttendanceAndSendToServer();
+        String? registerDate = MemoryPanelSc.panelScConfig.eventDate;
+        List<Attendance>? aux = await databaseEventPanel.getUnprocessedAttendanceAndSendToServer(registerDate);
 
         if(aux!=null){
           //attendances.removeWhere((item) => !aux.any((auxItem) => auxItem.qr == item.qr));
@@ -223,5 +236,16 @@ class RegisterAttendanceController extends IdempiereControllerModel {
 
     });
 
+  }
+  @override
+  void buttonMorePressed() {
+    print(MemoryPanelSc.panelScConfig.landingUrl ?? MemoryPanelSc.WEB_URL);
+    //String url ='https://www.youtube.com/watch?v=icMPQ84mG1Y&t=7s';
+    String url =MemoryPanelSc.panelScConfig.landingUrl ?? MemoryPanelSc.WEB_URL;
+
+    Get.toNamed(
+      Memory.ROUTE_WEB_VIEW_PAGE,
+      arguments: url,
+    );
   }
 }

@@ -15,9 +15,12 @@ class RegisterAttendancePage extends StatelessWidget {
   Widget build(BuildContext context) {
     // Inject the controller
     controller = Get.put(RegisterAttendanceController());
+    String title = MemoryPanelSc.panelScConfig.eventName ?? Messages.REGISTER_ATTENDANCE;
 
     return Scaffold(
-      appBar: AppBar(title: Text(Messages.REGISTER_ATTENDANCE)),
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(title,),actions: [controller.buttonMore()],),
       body: Obx(() => controller.isLogout.value ? Center(child:CircularProgressIndicator()) :
         SafeArea(
           child: Focus(
@@ -36,6 +39,18 @@ class RegisterAttendancePage extends StatelessWidget {
                   controller.isLoading.value ? getProgressBar(context) : Container(child: SizedBox(height: 15,)),
                   SizedBox(height: 10),
                   GestureDetector(
+                      onHorizontalDragUpdate: (details) {
+                        // Check if the drag is moving to the left (negative delta.dx)
+                        if (details.delta.dx < 0) {
+                          //_swipeDirection = 'Left swipe detected!';
+                        } else if (details.delta.dx > 0) {
+                          // _swipeDirection = 'Right swipe detected!';
+                        }
+                      },
+                      onHorizontalDragEnd: (details) {
+                        //_swipeDirection = 'Right swipe detected!';
+
+                      },
                       onTap: (){
                         controller.typeCode(context,'');
                       },

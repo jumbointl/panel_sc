@@ -39,7 +39,7 @@ class ObjectWithNameAndId {
     "id": id,
     "name": name,
   };
-  bool isActive(){
+  bool get isActive{
     if(active!=null && active==1){
       return true;
     }

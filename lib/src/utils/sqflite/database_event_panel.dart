@@ -17,6 +17,9 @@ class DatabaseEventPanel {
   static const String COLUMN_PROCESSED = 'processed';
   static const String COLUMN_PLACE_ID = 'place_id';
   static const String COLUMN_ID = 'id';
+  static const String COLUMN_POS_ID = 'pos_id';
+  static const String COLUMN_CONFIG_ID = 'config_id';
+  static const String COLUMN_DATE_TIME = 'date_time';
 
   static final String DB_NAME = MemoryPanelSc.DB_NAME;
 
@@ -35,37 +38,65 @@ class DatabaseEventPanel {
     String tableScanned = TABLE_SCANNED;
     return await openDatabase(
       dbPath,
-      version: 1,
+      version: 3,
       onCreate: (db, version) async {
         await db.execute(
           '''CREATE TABLE $tableScanned(
           $COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT,
           $COLUMN_QR TEXT NOT NULL UNIQUE, 
           $COLUMN_PLACE_ID INTEGER NOT NULL, 
-          $COLUMN_PROCESSED INTEGER DEFAULT 0)
+          $COLUMN_PROCESSED INTEGER DEFAULT 0,
+          $COLUMN_POS_ID INTEGER NOT NULL,
+          $COLUMN_CONFIG_ID INTEGER NOT NULL
+          )
           ''',
         );
         // You can add more CREATE TABLE statements for other tables here
       },
-      onUpgrade: (db, oldVersion, newVersion) {
+      onUpgrade: (db, oldVersion, newVersion) async {
         // Handle database schema migrations here if needed
+        if (oldVersion < newVersion) {
+          await db.execute('DROP TABLE IF EXISTS $tableScanned;');
+          await db.execute(
+              '''CREATE TABLE $tableScanned(
+            $COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            $COLUMN_QR TEXT NOT NULL UNIQUE, 
+            $COLUMN_PLACE_ID INTEGER NOT NULL, 
+            $COLUMN_PROCESSED INTEGER DEFAULT 0,
+            $COLUMN_POS_ID INTEGER NOT NULL,
+            $COLUMN_CONFIG_ID INTEGER NOT NULL
+            )
+            ''',
+          );
+
+        }
       },
     );
   }
 
   Future<int?> insertIntoScanned(Database db, String scanned) async {
-    if (scanned.length < MemoryPanelSc.lengthBarcode) {
+    if (scanned.length < MemoryPanelSc.barcodeLength) {
       return null;
     }
     int? placeId = int.tryParse(
-        scanned.substring(0, MemoryPanelSc.lengthPlaceId));
+        scanned.substring(0, MemoryPanelSc.placeIdLength));
     if (placeId == null) {
+      return null;
+    }
+    int? posId = MemoryPanelSc.pos.id ;
+    if (posId == null) {
+      return null;
+    }
+    int? configId = MemoryPanelSc.panelScConfig.id ;
+    if (configId == null) {
       return null;
     }
 
     Map<String, dynamic> data = {
       COLUMN_QR: scanned,
       COLUMN_PLACE_ID: placeId,
+      COLUMN_POS_ID: posId,
+      COLUMN_CONFIG_ID: configId,
     };
 
     print(data);
@@ -86,18 +117,27 @@ class DatabaseEventPanel {
 
   }
   Future<List<Attendance>?> insertIntoScannedAndGetUnprocessedData(Database db, String scanned) async {
-    if (scanned.length < MemoryPanelSc.lengthBarcode) {
+    if (scanned.length < MemoryPanelSc.barcodeLength) {
       return null;
     }
     int? placeId = int.tryParse(
-        scanned.substring(scanned.length - MemoryPanelSc.lengthPlaceId));
+        scanned.substring(scanned.length - MemoryPanelSc.placeIdLength));
     if (placeId == null) {
       return null;
     }
-
+    int? posId = MemoryPanelSc.pos.id ;
+    if (posId == null) {
+      return null;
+    }
+    int? configId = MemoryPanelSc.panelScConfig.id ;
+    if (configId == null) {
+      return null;
+    }
     Map<String, dynamic> data = {
       COLUMN_QR: scanned,
       COLUMN_PLACE_ID: placeId,
+      COLUMN_POS_ID: posId,
+      COLUMN_CONFIG_ID: configId,
     };
 
 
@@ -128,6 +168,7 @@ class DatabaseEventPanel {
     return 0;
   }
   Future<List<Attendance>> getUnprocessedAttendance() async {
+
     final db = await database;
     final List<Map<String, dynamic>> result = await db.rawQuery(
         "SELECT * FROM $TABLE_SCANNED WHERE $COLUMN_PROCESSED = 0");
@@ -152,18 +193,38 @@ class DatabaseEventPanel {
     print('updateAttendancesToProcessed');
 
   }
-  Future<List<Attendance>?> getUnprocessedAttendanceAndSendToServer() async {
+  Future<List<Attendance>?> getUnprocessedAttendanceAndSendToServer(String? registerDate) async {
+    String expressionDateTime ='NOW()';
+    if(registerDate!=null){
+      String? eventDate = MemoryPanelSc.panelScConfig.eventDate;
+      if(eventDate!=null){
+        DateTime? dateTime1 = DateTime.tryParse(eventDate);
+        DateTime? dateTime2 = DateTime.tryParse(registerDate);
+        if(dateTime1!=null && dateTime2!=null){
+          final Duration difference = dateTime2.difference(dateTime1);
+          if(difference.inDays!=0){
+            expressionDateTime ="NOW() + INTERVAL '${difference.inDays} day'";
+          }
+        }
+
+      }
+    }
     // Return unprocessed attendances from the database
     final db = await database;
     final List<Map<String, dynamic>> attendances = await db.rawQuery(
         "SELECT * FROM $TABLE_SCANNED WHERE $COLUMN_PROCESSED = 0");
     if (attendances.isNotEmpty) {
       List<Attendance> attendanceList = Attendance.fromJsonList(attendances);
-      String query = 'INSERT INTO attendance (qr,place_id) VALUES ';
+      String query = 'INSERT INTO attendance ($COLUMN_QR,$COLUMN_PLACE_ID,$COLUMN_POS_ID,'
+          '$COLUMN_DATE_TIME,$COLUMN_CONFIG_ID) VALUES ';
       for (int i = 0; i < attendanceList.length-1; i++) {
-        query = "$query ('${attendanceList[i].qr}',${attendanceList[i].placeId}),";
+        query = "$query ('${attendanceList[i].qr}',${attendanceList[i].placeId},"
+            "${attendanceList[i].posId},${attendanceList[i].configId}),";
       }
-      query = "$query ('${attendanceList[attendanceList.length-1].qr}',${attendanceList[attendanceList.length-1].placeId})";
+      query = "$query ('${attendanceList[attendanceList.length-1].qr}',"
+          "${attendanceList[attendanceList.length-1].placeId},"
+          "${attendanceList[attendanceList.length-1].posId},$expressionDateTime,"
+          "${attendanceList[attendanceList.length-1].configId})";
       query = "$query RETURNING id";
       print(query);
       String host = MemoryPanelSc.attendanceDbHost;
@@ -239,6 +300,32 @@ class DatabaseEventPanel {
 
     }
     return <Attendance>[];
+  }
+  String getSelectPosConfigTodayQuery(String posId) {
+    String query = """
+        SELECT config_id, config_event_name, logo_url,
+            landing_url, barcode_length, place_id_length,
+            show_progress_bar_each_x_times, time_offset_minutes,
+            event_id, config_isactive, event_date,
+            event_name, event_start_date, event_end_date,
+            event_isactive, pos_id, pos_name, function_id,
+            pos_code, pos_isactive
+            FROM public.v_event_configuration_today  where pos_id =$posId ;
+     """;
+    return query;
+  }
+  String getSelectPosConfigQuery(String posId) {
+    String query = """
+        SELECT config_id, config_event_name, logo_url,
+            landing_url, barcode_length, place_id_length,
+            show_progress_bar_each_x_times, time_offset_minutes,
+            event_id, config_isactive, event_date,
+            event_name, event_start_date, event_end_date,
+            event_isactive, pos_id, pos_name, function_id,
+            pos_code, pos_isactive
+            FROM public.v_event_configuration  where  pos_id =$posId ;
+     """;
+    return query;
   }
 
 }

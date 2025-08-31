@@ -919,13 +919,30 @@ class Memory {
   static String ROUTE_PANEL_SC_VIDEO_DOWNLOAD_PAGE='/video/download';
 
   static String ROUTE_PANEL_SC_SHOW_ATTENDANCE_PAGE='/attendance/show';
+  static String ROUTE_PANEL_SC_SHOW_ATTENDANCE_LIVE_PAGE='/attendance/show_live';
 
   static String ROUTE_PANEL_SC_REGISTER_ATTENDANCE_PAGE='/attendance/register';
 
   static String KEY_TEST_MODE='key_test_mode';
   static String DB_NAME = 'solexpresspy.db';
 
+  static String KEY_FONT_SIZE_ADJUSTMENT='key_font_size_adjustment';
 
+  static String KEY_LOGO_SIZE_ADJUSTMENT='key_logo_size_adjustment';
+
+  static String KEY_CLOCK_RIGHT_MARGIN_ADJUSTMENT='key_clock_right_margin_adjustment';
+
+  static String KEY_POS_NAME='key_pos_name';
+
+  static String KEY_POS_ID='key_pos_id';
+
+  static String KEY_EVENT_ID='key_config_id';
+
+  static String ROUTE_PANEL_ADMIN_ATTENDANCE_PAGE='/admin_attendance';
+
+  static String ROUTE_PANEL_EVENT_CONFIG_PAGE='/attendance/show/event_config';
+
+  static String KEY_SHOW_TOTAL_ATTENDANCE_BY_EVENT='key_show_total_attendance_by_event';
 
 
 

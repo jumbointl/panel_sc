@@ -48,7 +48,9 @@ import '../../models/panel_sc_config.dart';
 import '../../models/payment.dart';
 import '../../models/payment_type.dart';
 import '../../models/place.dart';
+import '../../models/pos.dart';
 import '../../models/search_result_list.dart';
+import '../../models/sol_express_event.dart';
 import '../../models/ticket.dart';
 import '../../models/ticket_owner.dart';
 import '../../providers/push_notifications_provider.dart';
@@ -624,6 +626,16 @@ class IdempiereControllerModel extends GetxController {
         )
     );
   }
+  IconButton buttonMore() {
+    return IconButton(
+        onPressed: () => !isLoading.value ?  buttonMorePressed():{},
+        icon: Icon(
+          Icons.more_vert,
+          color: Colors.black,
+        )
+    );
+  }
+
   IconButton buttonExcel() {
     return IconButton(
         onPressed: () => !isLoading.value ?  buttonExcelPressed():{},
@@ -1354,288 +1366,6 @@ class IdempiereControllerModel extends GetxController {
     GetStorage().remove(Memory.KEY_IDEMPIERE_UOM_LIST) ;
   }
 
-  Future<bool> connectToPostgresAndLoadAttendance() async{
-
-    String host = MemoryPanelSc.attendanceDbHost;
-    String dbName = MemoryPanelSc.attendanceDbName;
-    int dbPort = MemoryPanelSc.attendanceDbPort;
-    String dbUser = MemoryPanelSc.attendanceDbUser;
-    String dbPassword = MemoryPanelSc.attendanceDbPassword;
-    bool success = false;
-    bool testMode = GetStorage().read(Memory.KEY_TEST_MODE) ?? false;
-
-
-    try {
-      final conn = await Connection.open(
-        Endpoint(
-          host: host,
-          database: dbName,
-          username: dbUser,
-          password: dbPassword,
-          port: dbPort,
-        ),
-        // The postgres server hosted locally doesn't have SSL by default. If you're
-        // accessing a postgres server over the Internet, the server should support
-        // SSL and you should swap out the mode with `SslMode.verifyFull`.
-        settings: ConnectionSettings(sslMode: SslMode.require),
-      );
-      success = true;
-      print('try new connection..');
-      if(MemoryPanelSc.panelScConfig.id==null) {
-        String panelId = GetStorage().read(Memory.KEY_ID) ?? '1';
-
-        String getConfig = 'SELECT id, event_name, logo_url, landing_url FROM public.config WHERE id =$panelId;';
-        print('query $getConfig');
-        final resultConfig = await conn.execute(getConfig);
-        print('query $resultConfig');
-        if (resultConfig.isNotEmpty) {
-          var row = resultConfig[0];
-          int? id = int.tryParse(row[0].toString());
-          print(row);
-          String eventName = row[1].toString();
-          String logoUrl = row[2].toString();
-          String landingUrl = row[3].toString();
-          MemoryPanelSc.panelScConfig = PanelScConfig(id: id,
-              eventName: eventName,
-              logoUrl: logoUrl,
-              landingUrl: landingUrl);
-        }
-      }
-      String view = 'v_total_attendance';
-      if(testMode){
-        view = 'v_total_attendance_test';
-      }
-
-
-      String query ="SELECT total, place_id, place_name FROM public.$view"
-          " order by total desc;";
-
-      print('query $query');
-      final result0 = await conn.execute(query);
-      MemoryPanelSc.attendanceByGroup.clear();
-      for (final row in result0) {
-        String placeName = row[2].toString();
-        int? placeId = int.tryParse(row[1].toString());
-        placeName = placeName.toUpperCase();
-        Place place = Place(id: placeId,name: placeName);
-        AttendanceByGroup attendanceByGroup = AttendanceByGroup(total: int.tryParse(row[0].toString()),place: place);
-        MemoryPanelSc.attendanceByGroup.add(attendanceByGroup);
-
-      }
-      print('result0.affectedRows      ${result0.affectedRows}');
-
-      conn.close();
-
-
-
-
-    } catch (e) {
-      print('Error connecting to PostgreSQL: $e');
-      // Return false or throw an exception as per your error handling strategy
-    } finally{
-      return success;
-    }
-
-  }
-  Future<bool> connectToPostgresAndLoadTicket(IdempiereUser user) async{
-    //String host = Memory.APP_POSTGRESQL_HOST_NAME;
-    String host = Memory.APP_HOST_NAME_WITHOUT_HTTP;
-
-    String dbName = Memory.dbName;
-    int dbPort = Memory.dbPort;
-    String dbUser = user.name ?? '';
-    String dbPassword = user.password ??'';
-    bool success = false;
-    String sectorIds = MemoryPanelSc.panelScConfig.sectorsIn ?? MemoryPanelSc.defaultPanelId;
-
-
-    try {
-      final conn = await Connection.open(
-        Endpoint(
-          host: host,
-          database: dbName,
-          username: dbUser,
-          password: dbPassword,
-          port: dbPort,
-        ),
-        // The postgres server hosted locally doesn't have SSL by default. If you're
-        // accessing a postgres server over the Internet, the server should support
-        // SSL and you should swap out the mode with `SslMode.verifyFull`.
-        settings: ConnectionSettings(sslMode: SslMode.disable),
-      );
-      String date = DateTime.now().toIso8601String();
-      date = date.split('T').first;
-      print('has connection!---------------- $date');
-      success = true;
-      print('has connection!');
-      // You might want to return true here if connection is successful
-      String query ="SELECT a.c_bpartner_id as c_bpartner_id,  c.name,  c.name2, "
-          "a.srmd_consultorios_id,  co.name as consultorio, srmd_llamar, srmd_atendiendo, "
-          "srmd_atendido, srmd_agendamedica_ID, srmd_starttime, srmd_endtime, srmd_sectores_id"
-          " FROM adempiere.srmd_agendamedica as a, adempiere.c_bpartner as c ,"
-          " srmd_consultorios as co where  a.c_bpartner_id=c.c_bpartner_id and"
-          " co.srmd_consultorios_id =a.srmd_consultorios_id and a.srmd_llamar='Y'"
-          " and srmd_atendiendo='N' and a.srmd_starttime='$date' "
-          " and srmd_sectores_id in($sectorIds);";
-
-      /*String query ="SELECT a.c_bpartner_id as c_bpartner_id,  c.name,  c.name2, "
-          "a.srmd_consultorios_id,  co.name as consultorio, srmd_llamar, srmd_atendiendo, "
-          "srmd_atendido, srmd_agendamedica_ID, srmd_starttime, srmd_endtime, srmd_sectores_id"
-          " FROM adempiere.srmd_agendamedica as a, adempiere.c_bpartner as c ,"
-          " srmd_consultorios as co where  a.c_bpartner_id=c.c_bpartner_id and"
-          " co.srmd_consultorios_id =a.srmd_consultorios_id and a.srmd_llamar='Y'"
-          " and a.srmd_atendiendo='N'";*/
-
-      print('query $query');
-      final result0 = await conn.execute(query);
-      for (final row in result0) {
-
-        String placeName = row[4].toString();
-        if(!placeName.toUpperCase().contains('CONSULTORIO')){
-          placeName ='CONSULTORIO ${row[4].toString()}';
-        }
-        String? nameOwner ;
-        if(row[2]==null){
-          String? aux = row[1].toString();
-          String name = '';
-          if(aux.contains(' ')){
-            int totalIndex = 0;
-            aux.split(' ').forEach((element) {
-              totalIndex++;
-
-            });
-            if(totalIndex<=2){
-              nameOwner = aux;
-            } else {
-              int index = 0;
-              nameOwner ='';
-              aux.split(' ').forEach((element) {
-                index++;
-                if(element.isNotEmpty){
-                  if(index==1 || index==3){
-                    nameOwner  = '$nameOwner  $element';
-                  }
-                }
-
-              });
-            }
-
-
-
-          }
-
-        } else {
-          nameOwner = row[2].toString();
-        }
-        TicketStatus status = TicketStatus.none;
-        if(row[5]=='Y'){
-          status = TicketStatus.called;
-        }
-        if(row[6]==1) {
-          status = TicketStatus.received;
-        }
-        if(row[7]==1) {
-          status = TicketStatus.finished;
-        }
-        Ticket ticket = Ticket(
-          id: int.tryParse(row[8].toString()),
-          name: 'CONSULTA',
-          place: Place(id: int.tryParse(row[3].toString()) ,name: placeName),
-          owner: TicketOwner(id: int.tryParse(row[0].toString()), name: nameOwner),
-          status: status,
-
-        );
-
-        MemoryPanelSc.newCallingTickets.add(ticket);
-
-      }
-
-      print('result0.affectedRows      ${result0.affectedRows}');
-      if(MemoryPanelSc.callingTickets.isNotEmpty) {
-        for (int i = MemoryPanelSc.callingTickets.length - 1; i > -1; i--) {
-          Ticket ticket = MemoryPanelSc.callingTickets[i];
-          bool exist = false;
-          if (MemoryPanelSc.newCallingTickets.where((element) =>
-          element.id == ticket.id).isNotEmpty) {
-            exist = true;
-          }
-          if (!exist) MemoryPanelSc.callingTickets.removeAt(i);
-        }
-
-        for (int i = MemoryPanelSc.newCallingTickets.length - 1; i >-1; i--) {
-          Ticket ticket = MemoryPanelSc.newCallingTickets[i];
-          bool exist = false;
-          if (MemoryPanelSc.callingTickets.where((element) =>
-          element.id == ticket.id).isNotEmpty) {
-            exist = true;
-          }
-          if (exist) MemoryPanelSc.newCallingTickets.removeAt(i);
-        }
-      }
-
-      conn.close();
-      /*bool exist = false;
-      if(MemoryPanelSc.inicialCallingTickets.where((element) => element.id==ticket.id).isNotEmpty){
-        exist = true;
-      }
-      if(!exist) MemoryPanelSc.inicialCallingTickets.add(ticket);*/
-
-
-
-
-
-    } catch (e) {
-      print('Error connecting to PostgreSQL: $e');
-      // Return false or throw an exception as per your error handling strategy
-    } finally{
-      return success;
-    }
-
-  }
-  Future<int?> connectToPostgresAndInsertAttendance(Attendance attendance) async{
-
-    String host = MemoryPanelSc.attendanceDbHost;
-    String dbName = MemoryPanelSc.attendanceDbName;
-    int dbPort = MemoryPanelSc.attendanceDbPort;
-    String dbUser = MemoryPanelSc.attendanceDbUser;
-    String dbPassword = MemoryPanelSc.attendanceDbPassword;
-
-
-
-    try {
-      final conn = await Connection.open(
-        Endpoint(
-          host: host,
-          database: dbName,
-          username: dbUser,
-          password: dbPassword,
-          port: dbPort,
-        ),
-        // The postgres server hosted locally doesn't have SSL by default. If you're
-        // accessing a postgres server over the Internet, the server should support
-        // SSL and you should swap out the mode with `SslMode.verifyFull`.
-        settings: ConnectionSettings(sslMode: SslMode.require),
-      );
-      print('try new connection..');
-      // You might want to return true here if connection is successful
-      String query ="insert into public.attendance(place_id, qr) "
-          "values(${attendance.placeId},'${attendance.qr}') RETURNING id;";
-      print('query $query');
-      final result0 = await conn.execute(query);
-      int? result ;
-      conn.close();
-      if (result0.isNotEmpty && result0.first.isNotEmpty) {
-        result = result0.first[0] as int;
-      }
-      print('result0.insertId     $result');
-      return result;
-
-    } catch (e) {
-      print('Error connecting to PostgreSQL: $e');
-      return null;
-    }
-
-  }
   String getFileNameFromUrl(String url) {
     Uri? uri = Uri.tryParse(url);
 
@@ -1924,6 +1654,10 @@ class IdempiereControllerModel extends GetxController {
       //throw Exception('Error reading network file: $e');
       return [];
     }
+  }
+
+  void buttonMorePressed() {
+
   }
 
 }
