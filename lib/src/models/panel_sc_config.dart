@@ -38,6 +38,7 @@ class PanelScConfig extends ObjectWithNameAndId{
   int? eventId;
   SolExpressEvent? event;
 
+
   PanelScConfig({
     super.id,
     super.name,

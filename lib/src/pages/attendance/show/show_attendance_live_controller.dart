@@ -1,19 +1,14 @@
 import 'dart:async';
 
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:solexpress_panel_sc/src/pages/attendance/common/panel_controller_model.dart';
 import '../../../data/memory_panel_sc.dart';
-import '../../../idempiere/common/idempiere_controller_model.dart';
 import '../../../models/attendance_by_group.dart';
-import '../../../data/memory.dart';
 
 
 class ShowAttendanceLiveController extends PanelControllerModel {
   List<AttendanceByGroup> attendanceByGroups = <AttendanceByGroup>[].obs;
-  Timer? timer = MemoryPanelSc.readAttendanceTimer;
-  Timer? clockTimer = MemoryPanelSc.clockTimer;
+
 
   int screenColumns = 1;
 
@@ -24,7 +19,7 @@ class ShowAttendanceLiveController extends PanelControllerModel {
 
 
   ShowAttendanceLiveController(){
-    //showTotalAttendanceByEvent = Get.arguments[Memory.KEY_SHOW_TOTAL_ATTENDANCE_BY_EVENT] ?? false;
+
     DateTime now = DateTime.now();
     print(now.toIso8601String().substring(5,19));
     String time = now.toIso8601String().substring(5,19);
@@ -86,7 +81,8 @@ class ShowAttendanceLiveController extends PanelControllerModel {
 
   @override
   void signOut() async {
-    MemoryPanelSc.attendanceByGroup.clear();
+    isClosing.value = true;
+    //MemoryPanelSc.attendanceByGroup.clear();
     timerStopped = true;
     loadedConfig = false;
     if(timer!=null && timer!.isActive){
@@ -122,15 +118,15 @@ class ShowAttendanceLiveController extends PanelControllerModel {
         print(e);
       }
     }
-    Get.offNamedUntil(Memory.ROUTE_IDEMPIERE_LOGIN_PAGE,
-            (route) => false); // ELIMINAR EL HISTORIAL DE PANTALLAS
 
-   // Get.back();
+
+   Get.back();
 
   }
 
 
   Future<void> startTimerToRetrieveNewCalledAttendanceByGroups() async {
+    print('------------------startTimerToRetrieveNewCalledAttendanceByGroups');
     int interval =MemoryPanelSc.intervalToRetrieveNewCalledAttendanceByGroups;
     timer = Timer.periodic(Duration(seconds:interval), (timer) async {
       if(timerStopped){
@@ -174,6 +170,7 @@ class ShowAttendanceLiveController extends PanelControllerModel {
     attendanceByGroups.clear();
     attendanceByGroups.addAll(MemoryPanelSc.attendanceByGroup);
 
+
     //isLoading.value = false ;
 
   }
@@ -186,6 +183,8 @@ class ShowAttendanceLiveController extends PanelControllerModel {
 
 
   }
+
+
 
 
 

@@ -2,17 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:solexpress_panel_sc/src/pages/attendance/common/panel_controller_model.dart';
 import '../../../data/memory_panel_sc.dart';
-import '../../../idempiere/common/idempiere_controller_model.dart';
 import '../../../models/attendance_by_group.dart';
 import '../../../data/memory.dart';
 
 
 class ShowAttendanceController extends PanelControllerModel {
   List<AttendanceByGroup> attendanceByGroups = <AttendanceByGroup>[].obs;
+  @override
   Timer? timer = MemoryPanelSc.readAttendanceTimer;
+  @override
   Timer? clockTimer = MemoryPanelSc.clockTimer;
 
   int screenColumns = 1;
@@ -127,7 +127,14 @@ class ShowAttendanceController extends PanelControllerModel {
     Get.back();
 
   }
+  void loadAttendance() async{
+    print('------------------------loadAttendance');
+    bool success = await connectToPostgresAndLoadAttendance();
+    if(success){
+      readAttendanceByGroup();
+    }
 
+  }
 
   Future<void> startTimerToRetrieveNewCalledAttendanceByGroups() async {
 
@@ -139,7 +146,14 @@ class ShowAttendanceController extends PanelControllerModel {
       }
       isLoading.value = false ;
     }
-    int intervalClock =MemoryPanelSc.intervalToRefreshClockInSecond;
+    DateTime now = DateTime.now();
+    String time = now.toIso8601String().split('T').first;
+    if(MemoryPanelSc.panelScConfig.eventDate!=null){
+      time = MemoryPanelSc.panelScConfig.eventDate!.split(' ').first;
+    }
+    actualTime.value = time;
+
+    /*int intervalClock =MemoryPanelSc.intervalToRefreshClockInSecond;
     clockTimer = Timer.periodic(Duration(seconds: intervalClock), (timer) async {
       if(timerStopped){
         clockTimer?.cancel();
@@ -149,12 +163,12 @@ class ShowAttendanceController extends PanelControllerModel {
       DateTime now = DateTime.now();
       String time = now.toIso8601String().substring(5,19);
       actualTime.value = time.replaceAll('T', ' ');
-    });
+    });*/
   }
 
 
   void readAttendanceByGroup() {
-
+    print('------------------------read');
     //isLoading.value = true ;
     //await Future.delayed(const Duration(seconds: 5));
     attendanceByGroups.clear();
@@ -174,7 +188,7 @@ class ShowAttendanceController extends PanelControllerModel {
   }
 
   void showEventConfigPage(BuildContext context) {
-
+     print('------------------------showEventConfigPage');
      Get.toNamed(Memory.ROUTE_PANEL_EVENT_CONFIG_PAGE);
   }
 

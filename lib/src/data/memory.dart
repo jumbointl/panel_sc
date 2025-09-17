@@ -291,6 +291,7 @@ class Memory {
         surface: Colors.lightGreen.shade300, //backgroud
         onSurface: Colors.black)
     );
+    static const Color THEME_APP_BAR_COLOR = Color(0xFF6FD0B9);
     static ThemeData THEME = ThemeData(
         //scaffoldBackgroundColor: Colors.grey,
         scaffoldBackgroundColor: Colors.black,
@@ -782,6 +783,7 @@ class Memory {
     static Rol ROL_WAREHOUSE = Rol(id:7,name:WAREHOUSE,route: ROUTE_WAREHOUSE_HOME_PAGE, image: IMAGE_ROL_WAREHOUSE,isActive: true );
     static Rol ROL_POS = Rol(id:8,name:POS,route: ROUTE_SELLER_HOME_PAGE, image: IMAGE_ROL_SOCIETY,isActive: true );
 
+
     static List<Rol> ROLES_LIST =<Rol> [ROL_ADMIN,ROL_DELIVERY_MAN,ROL_CLIENT,ROL_ORDERSPICKER,
         ROL_SELLER,ROL_ACCOUNTING,ROL_WAREHOUSE,ROL_POS];
     static List<String> ROLES_IMAGE_LIST = <String>[IMAGE_ROL_ADMIN,IMAGE_ROL_DELIVERY_MAN ,
@@ -918,10 +920,10 @@ class Memory {
 
   static String ROUTE_PANEL_SC_VIDEO_DOWNLOAD_PAGE='/video/download';
 
-  static String ROUTE_PANEL_SC_SHOW_ATTENDANCE_PAGE='/attendance/show';
-  static String ROUTE_PANEL_SC_SHOW_ATTENDANCE_LIVE_PAGE='/attendance/show_live';
+  static String ROUTE_PANEL_SC_SHOW_ATTENDANCE_PAGE='/attendance_show';
+  static String ROUTE_PANEL_SC_SHOW_ATTENDANCE_LIVE_PAGE='/attendance_show_live';
 
-  static String ROUTE_PANEL_SC_REGISTER_ATTENDANCE_PAGE='/attendance/register';
+  static String ROUTE_PANEL_SC_REGISTER_ATTENDANCE_PAGE='/attendance_register';
 
   static String KEY_TEST_MODE='key_test_mode';
   static String DB_NAME = 'solexpresspy.db';
@@ -940,9 +942,38 @@ class Memory {
 
   static String ROUTE_PANEL_ADMIN_ATTENDANCE_PAGE='/admin_attendance';
 
-  static String ROUTE_PANEL_EVENT_CONFIG_PAGE='/attendance/show/event_config';
+  static String ROUTE_PANEL_EVENT_CONFIG_PAGE='/event_config';
 
   static String KEY_SHOW_TOTAL_ATTENDANCE_BY_EVENT='key_show_total_attendance_by_event';
+
+  static Rol ROL_ATTENDANCE_POS = Rol(id:9,name:POS,route: ROUTE_PANEL_SC_REGISTER_ATTENDANCE_PAGE, image: IMAGE_ATTENDANCE_POS,isActive: true );
+  static Rol ROL_ATTENDANCE_PANEL = Rol(id:10,name:PANEL,route: ROUTE_PANEL_SC_SHOW_ATTENDANCE_LIVE_PAGE, image: IMAGE_ATTENDANCE_PANEL,isActive: true );
+
+  static String PANEL ='PANEL';
+
+  static String IMAGE_ATTENDANCE_PANEL ='assets/images/panel.png';
+  static String IMAGE_ATTENDANCE_POS ='assets/images/qr-code-scan.png';
+
+  static List<Rol> ATTENDANCE_ROLES_LIST =<Rol> [ROL_ADMIN,ROL_ATTENDANCE_PANEL,ROL_ATTENDANCE_POS];
+
+  static String EVENTS = 'EVENTOS';
+
+  static String ROUTE_PANEL_EVENT_CREATE_PAGE='/event_create';
+  static String ROUTE_PANEL_EVENT_HANDLING_PAGE='/event_handling';
+
+  static String KEY_IS_ADMIN='key_is_admin';
+
+  static String KEY_ATTENDANCE_DB_HOST='key_attendance_db_host';
+
+  static String KEY_ADMIN_CODE='key_admin_code';
+
+  static String ROUTE_PANEL_POS_CREATE_PAGE='/pos_create';
+  static String ROUTE_PANEL_POS_HANDLING_PAGE='/pos_handling';
+
+  static String ROUTE_PANEL_EVENT_HAS_POS_CREATE_PAGE='/event_has_pos_create';
+  static String ROUTE_PANEL_EVENT_HAS_POS_HANDLING_PAGE='/event_has_pos_handling';
+  static String ROUTE_PANEL_EVENT_CONFIG_CREATE_PAGE='/event_config_create';
+  static String ROUTE_PANEL_EVENT_CONFIG_HANDLING_PAGE='/event_config_handling';
 
 
 

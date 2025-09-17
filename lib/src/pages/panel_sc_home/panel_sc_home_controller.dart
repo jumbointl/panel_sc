@@ -5,7 +5,6 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../data/memory_panel_sc.dart';
-import '../../idempiere/common/idempiere_controller_model.dart';
 import '../../models/idempiere/idempiere_user.dart';
 import '../../models/panel_sc_config.dart';
 import '../../models/ticket.dart';
@@ -20,7 +19,9 @@ class PanelScHomeController extends PanelControllerModel {
   late IdempiereUser user  ;
   final List<Ticket> callingTickets = MemoryPanelSc.callingTickets;
   PanelScConfig panelScConfig = PanelScConfig();
+  @override
   Timer? timer = MemoryPanelSc.panelScTimer;
+  @override
   bool isTimerStarted = false ;
   bool onlyTv =false;
   bool ttsStopped = false;

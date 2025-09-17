@@ -55,7 +55,6 @@ class ClientOrdersCreateController extends ControllerModel {
 
       }
       DateTime now = Memory.getDateTimeNowLocal();
-
       print('Hour Local--- ${now.day}/${now.month}/${now.year}. ${now.hour}:${now.minute}');
       maxDay = DateTime(now.year+1, now.month, now.day,now.hour,0);
       minDay = DateTime(now.year-1, now.month, now.day,now.hour,0);
@@ -195,7 +194,6 @@ class ClientOrdersCreateController extends ControllerModel {
       return;
     }
     DateTime now = Memory.getDateTimeNowLocal();
-    now;
     date.value = DateTime(data.year, data.month, data.day,now.hour,0);
     Memory.deliveryDateLocal = date.value;
     print('Local--- ${date.value.day}/${date.value.month}/${date.value.year}. ${date.value.hour}:${date.value.minute}');

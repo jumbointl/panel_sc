@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:solexpress_panel_sc/src/pages/admin/database/event/event/events_handling_page.dart';
+import 'package:solexpress_panel_sc/src/pages/admin/database/event/event_has_pos/event_has_pos_handling_page.dart';
 import 'package:solexpress_panel_sc/src/pages/attendance/register/register_attendance_page.dart';
 import 'package:solexpress_panel_sc/src/pages/panel_sc_home/panel_sc_home_page.dart';
 import '../idempiere/page/configuration/idempiere_configuration_page.dart';
-import '../pages/attendance/admin/admin_attendance_page.dart';
+import '../pages/admin/database/event/config/event_config_handling_page.dart';
+import '../pages/admin/database/event/pos/pos_handling_page.dart';
+import '../pages/attendance/admin/admin_attendance_home_page.dart';
 import '../pages/attendance/show/event_config_page.dart';
 import '../pages/attendance/show/show_attendance_live_page.dart';
 import '../pages/attendance/show/show_attendance_page.dart';
@@ -47,13 +51,37 @@ class PanelScRoutes {
     transition: Transition.circularReveal ,
     transitionDuration: Duration(seconds: shortSeconds),),
 
-  GetPage(name: Memory.ROUTE_PANEL_ADMIN_ATTENDANCE_PAGE, page: ()=>AdminAttendancePage(),
+  GetPage(name: Memory.ROUTE_PANEL_ADMIN_ATTENDANCE_PAGE, page: ()=>AdminAttendanceHomePage(),
       transition: Transition.circularReveal ,
       transitionDuration: Duration(seconds: shortSeconds),),
   GetPage(name: Memory.ROUTE_PANEL_EVENT_CONFIG_PAGE, page: ()=>EventConfigPage(),
     transition: Transition.circularReveal ,
     transitionDuration: Duration(seconds: shortSeconds),),
+  GetPage(name: Memory.ROUTE_PANEL_EVENT_CREATE_PAGE, page: ()=>EventsHandlingPage(createPage: true),
+    transition: Transition.circularReveal ,
+    transitionDuration: Duration(seconds: shortSeconds),),
+  GetPage(name: Memory.ROUTE_PANEL_EVENT_HANDLING_PAGE, page: ()=>EventsHandlingPage(createPage: false),
+    transition: Transition.circularReveal ,
+    transitionDuration: Duration(seconds: shortSeconds),),
+  GetPage(name: Memory.ROUTE_PANEL_POS_CREATE_PAGE, page: ()=>PosHandlingPage(createPage: true),
+    transition: Transition.circularReveal ,
+    transitionDuration: Duration(seconds: shortSeconds),),
+  GetPage(name: Memory.ROUTE_PANEL_POS_HANDLING_PAGE, page: ()=>PosHandlingPage(createPage: false),
+    transition: Transition.circularReveal ,
+    transitionDuration: Duration(seconds: shortSeconds),),
 
+  GetPage(name: Memory.ROUTE_PANEL_EVENT_HAS_POS_CREATE_PAGE, page: ()=>EventHasPosHandlingPage(createPage: true),
+    transition: Transition.circularReveal ,
+    transitionDuration: Duration(seconds: shortSeconds),),
+  GetPage(name: Memory.ROUTE_PANEL_EVENT_HAS_POS_HANDLING_PAGE, page: ()=>EventHasPosHandlingPage(createPage: false),
+    transition: Transition.circularReveal ,
+    transitionDuration: Duration(seconds: shortSeconds),),
+  GetPage(name: Memory.ROUTE_PANEL_EVENT_CONFIG_CREATE_PAGE, page: ()=>EventConfigHandlingPage(createPage: true),
+    transition: Transition.circularReveal ,
+    transitionDuration: Duration(seconds: shortSeconds),),
+  GetPage(name: Memory.ROUTE_PANEL_EVENT_CONFIG_HANDLING_PAGE, page: ()=>EventConfigHandlingPage(createPage: false),
+    transition: Transition.circularReveal ,
+    transitionDuration: Duration(seconds: shortSeconds),),
 
   GetPage(name: Memory.ROUTE_IDEMPIERE_ROLES_PAGE, page: () => PanelScRolesPage(),
   transition: Transition.circularReveal ,

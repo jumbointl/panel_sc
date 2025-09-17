@@ -1,5 +1,5 @@
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:solexpress_panel_sc/src/data/memory_panel_sc.dart';
@@ -22,6 +22,7 @@ class PanelScLoginController extends PanelControllerModel{
   TextEditingController fontSizeAdjustmentController = TextEditingController();
   TextEditingController logoSizeAdjustmentController = TextEditingController();
   TextEditingController clockRightMarginAdjustmentController = TextEditingController();
+  TextEditingController urlController = TextEditingController();
   var showPassword = false.obs;
   var isTestMode = false.obs;
   var rememberMe = true.obs;
@@ -33,12 +34,23 @@ class PanelScLoginController extends PanelControllerModel{
   var idFunction = MemoryPanelSc.getDefaultFunction().id.toString().obs;
 
   var onlyTv = false.obs;
+  var showConfiguration = false.obs;
   var attendancePanel = Memory.TYPE_OF_PANEL == Memory.EVENT_PANEL ? true.obs : false.obs;
+  bool isLoaded = false;
+
+  var isAdmin = false.obs;
 
   PanelScLoginController(){
     MemoryPanelSc.panelScConfig = PanelScConfig();
     MemoryPanelSc.pos = Pos();
     MemoryPanelSc.event = SolExpressEvent();
+
+    String? dbHost = GetStorage().read(Memory.KEY_ATTENDANCE_DB_HOST);
+    if(dbHost!=null){
+      urlController.text = dbHost;
+    } else {
+      urlController.text = MemoryPanelSc.attendanceDbHost;
+    }
 
     userNameController.text = MemoryPanelSc.defaultUserName;
     passwordController.text = MemoryPanelSc.defaultPassword;
@@ -160,8 +172,8 @@ class PanelScLoginController extends PanelControllerModel{
     GetStorage().write(Memory.KEY_EVENT_ID, panelId);
 
 
-    autoLogin.value = false;
     if(attendancePanel.value){
+      isLoaded = true;
       String posId = posIdController.text.trim();
       if(posId.isNotEmpty){
         int? aux = int.tryParse(posId);
@@ -181,13 +193,87 @@ class PanelScLoginController extends PanelControllerModel{
         showErrorMessages(Messages.ID);
         return ;
       }
+      String? code = GetStorage().read(Memory.KEY_ADMIN_CODE) ??'';
+      if(aux>0 && aux<=MemoryPanelSc.maxPanelAdminId){
+        isAdmin.value = true;
+        code = await showInputDialog(context, Messages.PASSWORD, Messages.PASSWORD, code);
+        if(code==null || code.isEmpty){
+          showErrorMessages(Messages.PASSWORD);
+          return;
+        }
+        GetStorage().write(Memory.KEY_ADMIN_CODE, code);
+      } else {
+        isAdmin.value = false;
+      }
       GetStorage().write(Memory.KEY_ID, panelId);
       Memory.DB_NAME = MemoryPanelSc.DB_NAME;
       isLoading.value = true;
-      bool b = await connectToPostgresAttendance();
-      isLoading.value = false;
+      String dbHost = urlController.text.trim();
+      if(dbHost.isEmpty){
+        showErrorMessages(Messages.DB_HOST);
+        return ;
+      }
+      GetStorage().write(Memory.KEY_ATTENDANCE_DB_HOST, dbHost);
+      MemoryPanelSc.attendanceDbHost = dbHost;
+      if(isAdmin.value){
+        bool? b = await connectToPostgresAdmin(code);
+        if (b==null) {
+          for (int i = 0; i < 4; i++) {
+            await Future.delayed(Duration(seconds: 10));
+            b = await connectToPostgresAdmin(code);
+            if (b==true) {
+              break;
+            }
+            if(context.mounted){
+              showAutoCloseErrorMessages(context, '${Messages.RETRYING_CONNECTION} ${i+1}/4',
+                  Colors.red[200]!,4);
+            }
+            if (i == 3) { // Last attempt failed
+              isLoading.value = false;
+              if(context.mounted){
+                showAutoCloseErrorMessages(context, Messages.LOGIN,
+                    Colors.red[200]!,4);
+              }
+              return;
+            }
+          }
+        }
+        isLoading.value = false;
+        if(b==false){
+          showErrorMessages(Messages.LOGIN);
+          return;
+        }
+        Get.toNamed(Memory.ROUTE_PANEL_ADMIN_ATTENDANCE_PAGE);
+        return;
+      }
 
-      if(!b){
+
+      bool? b = await connectToPostgresAttendance();
+      if (b==null) {
+        for (int i = 0; i < 4; i++) {
+          await Future.delayed(Duration(seconds: 10));
+          b = await connectToPostgresAttendance();
+          if (b==true) {
+            break;
+          }
+          if(context.mounted){
+            showAutoCloseErrorMessages(context, '${Messages.RETRYING_CONNECTION} ${i+1}/4',
+                Colors.red[200]!,4);
+          }
+          if (i == 3) { // Last attempt failed
+            isLoading.value = false;
+            if(context.mounted){
+              showAutoCloseErrorMessages(context, Messages.LOGIN,
+                  Colors.red[200]!,4);
+            }
+
+
+            return;
+          }
+        }
+      }
+      isLoading.value = false;
+      if(b==false){
         showErrorMessages(Messages.LOGIN);
         return;
       }
@@ -195,12 +281,16 @@ class PanelScLoginController extends PanelControllerModel{
         DateTime now = DateTime.now();
         String date = now.toIso8601String().split('T')[0];
         String hint = '${Messages.ID} $posId $date ${Messages.NO_DATA_FOUND}';
-        showErrorMessages('$hint ${Messages.REVIEW_DATA_IN_DATABASE}');
+        if(context.mounted){
+          showAutoCloseErrorMessages(context,'$hint ${Messages.REVIEW_DATA_IN_DATABASE}',Colors.red[200]!,6);
+        }
+
         return;
       }
+      MemoryPanelSc.showTotalAttendanceByEvent = false;
       switch(MemoryPanelSc.pos.functionId){
         case MemoryPanelSc.FUNCTION_SHOW_ATTENDANCE:
-          Get.toNamed(Memory.ROUTE_PANEL_SC_SHOW_ATTENDANCE_PAGE);
+          Get.toNamed(Memory.ROUTE_PANEL_SC_SHOW_ATTENDANCE_LIVE_PAGE);
           break;
         case MemoryPanelSc.FUNCTION_REGISTER_ATTENDANCE:
           Get.toNamed(Memory.ROUTE_PANEL_SC_REGISTER_ATTENDANCE_PAGE);
@@ -270,7 +360,7 @@ class PanelScLoginController extends PanelControllerModel{
 
 
     if(isValidForm(userName, password,panelId)){
-
+        isLoaded = true;
         String appHost = GetStorage().read(Memory.KEY_APP_HOST_WITH_HTTP) ?? '';
         String appHostName = GetStorage().read(Memory.KEY_APP_HOST_NAME_WITHOUT_HTTP) ?? '';
 
@@ -497,6 +587,12 @@ class PanelScLoginController extends PanelControllerModel{
 
     }
 
+  }
+
+  void setIsAdmin(bool newValue) {
+    isAdmin.value = newValue;
+    GetStorage().write(Memory.KEY_IS_ADMIN, newValue);
+    update();
   }
 
 

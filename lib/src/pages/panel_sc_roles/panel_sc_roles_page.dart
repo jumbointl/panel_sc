@@ -46,15 +46,14 @@ class PanelScRolesPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: true,
         actions: [
 
-          con.buttonUser(),
           con.buttonSignOut()
           ],
-
+        centerTitle: true,
         title: Text(
-            Messages.LOGIN,
+            Messages.ROL,
             style: TextStyle(
                 color: Colors.black
 

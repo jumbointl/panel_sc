@@ -12,6 +12,10 @@ class SolExpressEvent extends ObjectWithNameAndId {
   List<PanelScConfig>? configurations;
   String? eventStartDate;
   String? eventEndDate;
+  String? image;
+  String? imageToDelete;
+
+  List<String>? daysConfigured;
 
   SolExpressEvent({
     super.id,
@@ -20,6 +24,9 @@ class SolExpressEvent extends ObjectWithNameAndId {
     this.configurations,
     this.eventStartDate,
     this.eventEndDate,
+    this.image,
+    this.imageToDelete,
+    this.daysConfigured,
   });
 
 
@@ -30,6 +37,8 @@ class SolExpressEvent extends ObjectWithNameAndId {
     configurations: PanelScConfig.fromJsonList(json["configurations"]),
     eventStartDate: json["event_start_date"],
     eventEndDate: json["event_end_date"],
+    image: json["image"],
+    imageToDelete: json["image_to_delete"],
   );
 
   @override
@@ -40,6 +49,8 @@ class SolExpressEvent extends ObjectWithNameAndId {
     "configurations": configurations,
     "event_start_date": eventStartDate,
     "event_end_date": eventEndDate,
+    "image": image,
+    "image_to_delete": imageToDelete,
   };
   static List<SolExpressEvent> fromJsonList(List<dynamic> list){
     List<SolExpressEvent> newList =[];
@@ -53,5 +64,35 @@ class SolExpressEvent extends ObjectWithNameAndId {
 
     }
     return newList;
+  }
+  List<String> getEventDates(){
+    DateTime endDate = DateTime.parse(eventEndDate!);
+    DateTime startDate = DateTime.parse(eventStartDate!);
+
+    List<String> dates =[];
+    if(eventStartDate!=null){
+      dates.add(eventStartDate!);
+    }
+    while(eventEndDate!=null && endDate.isAfter(startDate)){
+      startDate = startDate.add(const Duration(days: 1));
+      String date = startDate.toIso8601String().split('T')[0];
+      dates.add(date);
+    }
+
+    return dates;
+  }
+  List<String> getEventNoConfiguredDays(){
+
+    List<String> noConfiguredDays =[];
+    List<String> dates = getEventDates();
+    if(daysConfigured==null){
+      return dates;
+    }
+    for(String date in dates) {
+      if (!daysConfigured!.contains(date)) {
+        noConfiguredDays.add(date);
+      }
+    }
+    return noConfiguredDays;
   }
 }

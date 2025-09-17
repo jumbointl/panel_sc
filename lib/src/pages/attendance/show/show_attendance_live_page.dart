@@ -6,7 +6,7 @@ import '../../../data/memory_panel_sc.dart';
 import '../../../data/messages.dart';
 class ShowAttendanceLivePage extends StatelessWidget {
 
-  late ShowAttendanceLiveController con;
+  ShowAttendanceLiveController con =Get.put(ShowAttendanceLiveController());
   int count = 0;
   final int defaultColumnsWidth = MemoryPanelSc.EVENT_PANEL_COLUMNS_WIDTH;
 
@@ -14,7 +14,6 @@ class ShowAttendanceLivePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    con = Get.put(ShowAttendanceLiveController());
     // Simulate API call or data loading
     double columns = MediaQuery.of(context).size.width/defaultColumnsWidth;
     if(columns>1){
@@ -31,7 +30,16 @@ class ShowAttendanceLivePage extends StatelessWidget {
 
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      int interval =5;
+      if(con.attendanceByGroups.isEmpty){
+        if(con.attendanceLoaded){
+          con.showAutoCloseMessages(context,Messages.NO_DATA_FOUND,Colors.green[200]!,interval);
+        } else{
+          interval = MemoryPanelSc.intervalToRetrieveNewCalledAttendanceByGroups+2;
+          con.showAutoCloseQuestionMessages(context,Messages.WAIT_FOR_DATA,Colors.yellow[200]!,interval);
+        }
 
+      }
     });
 
 
@@ -51,11 +59,12 @@ class ShowAttendanceLivePage extends StatelessWidget {
               print('Pop was prevented.');
             }
 
+            //Get.offNamed(Memory.ROUTE_IDEMPIERE_LOGIN_PAGE);
             con.signOut();
           },
           //color: Color(0xff2c3fc5),
           child:  Obx(()=>SingleChildScrollView(
-            child: Container(
+            child: SizedBox(
               height: MediaQuery.of(context).size.height,
               child: Column(
                 children: [
@@ -107,7 +116,9 @@ class ShowAttendanceLivePage extends StatelessWidget {
 
   }
   Widget showTotalAttendance(BuildContext context, List<AttendanceByGroup> attendanceByGroups) {
-
+    if(con.isClosing.value){
+      return isClosingIndicator(context);
+    }
     if(con.screenColumns>1){
       return showTotalAttendanceLandscape(context, attendanceByGroups);
     }
@@ -116,10 +127,13 @@ class ShowAttendanceLivePage extends StatelessWidget {
     MemoryPanelSc.EVENT_PANEL_LOGO_WIDTH = 80*MemoryPanelSc.logoSizeAdjustment;
 
     int total = 0;
+
+
     String eventName = MemoryPanelSc.panelScConfig.eventName ?? Messages.EMPTY;
-    if(eventName == Messages.EMPTY){
-      eventName = MemoryPanelSc.event.name ?? Messages.EMPTY;
+    if(MemoryPanelSc.showTotalAttendanceByEvent){
+      eventName = '${MemoryPanelSc.event.name} (${Messages.TOTAL})' ;
     }
+
 
     // let int total = attendanceByGroups total
     total = attendanceByGroups.fold(0, (sum, item) => sum + (item.total ?? 0));
@@ -179,10 +193,34 @@ class ShowAttendanceLivePage extends StatelessWidget {
           ],
         ),);
   }
+  Widget isClosingIndicator(BuildContext context){
+    return Container(
+      width: double.infinity,
+      //height: MediaQuery.of(context).size.height,
+      margin: EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 15,bottom: 15),
+        child: Column(
+          spacing: 10,
+          children: [
+            Text(Messages.CLOSING_PLEASE_WAIT),
+            LinearProgressIndicator(
+              minHeight: 30,
+              color: Colors.yellow,),
+          ],
+        ),
+      ),);
+  }
   Widget showTotalAttendanceLandscape(BuildContext context, List<AttendanceByGroup> attendanceByGroups) {
     int total = 0;
     String eventName = MemoryPanelSc.panelScConfig.eventName ?? Messages.EMPTY;
-
+    if(MemoryPanelSc.showTotalAttendanceByEvent){
+      eventName = '${MemoryPanelSc.event.name} (${Messages.TOTAL})' ;
+    }
     // let int total = attendanceByGroups total
     total = attendanceByGroups.fold(0, (sum, item) => sum + (item.total ?? 0));
     MemoryPanelSc.EVENT_PANEL_LOGO_HEIGHT = 120*MemoryPanelSc.logoSizeAdjustment;
@@ -327,6 +365,8 @@ class ShowAttendanceLivePage extends StatelessWidget {
     return LinearProgressIndicator(minHeight: 15,color: Colors.purple,);
 
   }
+
+
 
 
 }

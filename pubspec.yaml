@@ -43,6 +43,7 @@ dependencies:
   date_picker_plus: ^4.2.0
   device_info_plus: ^11.4.0
   dotted_border: ^2.1.0
+  dropdown_button2: ^2.3.9
   excel: ^4.0.6
   expandable_page_view: ^1.0.17
   file_saver: ^0.2.14

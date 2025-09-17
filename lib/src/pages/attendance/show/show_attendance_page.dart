@@ -6,15 +6,17 @@ import '../../../data/memory_panel_sc.dart';
 import '../../../data/messages.dart';
 class ShowAttendancePage extends StatelessWidget {
 
-  late ShowAttendanceController con;
+  late ShowAttendanceController con = Get.put(ShowAttendanceController());
   int count = 0;
   final int defaultColumnsWidth = MemoryPanelSc.EVENT_PANEL_COLUMNS_WIDTH;
+  Color? backgroundColor = Colors.yellow[200];
+  int count2 =0;
 
   ShowAttendancePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    con = Get.put(ShowAttendanceController());
+
     // Simulate API call or data loading
     double columns = MediaQuery.of(context).size.width/defaultColumnsWidth;
     if(columns>1){
@@ -32,7 +34,20 @@ class ShowAttendancePage extends StatelessWidget {
     double screenHeight = MediaQuery.of(context).size.height;
     bool screenHeightError = screenHeight<600;
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      int interval =3;
+      if(con.attendanceByGroups.isEmpty){
+        if(con.attendanceLoaded){
+          if(count2<3){
+            count2++;
+            con.showAutoCloseMessages(context,Messages.NO_DATA_FOUND,Colors.green[200]!,interval);
+          }
 
+        } else{
+          interval = MemoryPanelSc.intervalToRetrieveNewCalledAttendanceByGroups+2;
+          con.showAutoCloseQuestionMessages(context,Messages.WAIT_FOR_DATA,Colors.yellow[200]!,interval);
+        }
+
+      }
     });
 
 
@@ -58,7 +73,7 @@ class ShowAttendancePage extends StatelessWidget {
           child:  Obx(()=>screenHeightError ? Container(
             child: screenHeightErrorPanel(context),
           ) :SingleChildScrollView(
-            child: Container(
+            child: SizedBox(
               height: MediaQuery.of(context).size.height,
               child: Column(
                 children: [
@@ -133,7 +148,7 @@ class ShowAttendancePage extends StatelessWidget {
         //height: contaninerHeight,
         margin: EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
@@ -196,7 +211,7 @@ class ShowAttendancePage extends StatelessWidget {
       width: double.infinity,
       margin: EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Padding(

@@ -1,5 +1,8 @@
 
 
+import 'dart:async';
+
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -7,8 +10,8 @@ import 'package:postgres/postgres.dart';
 
 import '../../../data/memory.dart';
 import '../../../data/memory_panel_sc.dart';
+import '../../../data/messages.dart';
 import '../../../idempiere/common/idempiere_controller_model.dart';
-import '../../../models/attendance.dart';
 import '../../../models/attendance_by_group.dart';
 import '../../../models/idempiere/idempiere_user.dart';
 import '../../../models/panel_sc_config.dart';
@@ -22,31 +25,30 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
   bool timerStopped = MemoryPanelSc.timerStopped;
   bool isTimerStarted = MemoryPanelSc.timerStarted;
   bool loadedConfig = false;
-  bool showTotalAttendanceByEvent = false;
-
+  RxString title = ''.obs;
+  Timer? timer = MemoryPanelSc.readAttendanceTimer;
+  Timer? clockTimer = MemoryPanelSc.clockTimer;
+  RxBool isClosing = false.obs;
+  bool attendanceLoaded = false;
 
   Future<bool> connectToPostgresAndLoadAttendance() async{
-    if(timerStopped){
-      return false ;
-    }
     int? configId = MemoryPanelSc.panelScConfig.id;
 
-    if(!showTotalAttendanceByEvent){
+    if(!MemoryPanelSc.showTotalAttendanceByEvent){
       if(configId==null){
         return false;
       }
-      return false;
     } else if(MemoryPanelSc.panelScConfig.eventId==null){
       return false;
     }
-    String view = 'v_attendance_by_config_and_place';
-    String query ="SELECT total, place_id, place_name, config_id FROM public.$view"
+    String view = 'v_total_attendance_by_config_and_place';
+    String query ="SELECT total, place_id, place_name, config_id FROM public.$view "
         "where config_id = $configId  order by total desc;";
 
-    if(showTotalAttendanceByEvent){
+    if(MemoryPanelSc.showTotalAttendanceByEvent){
       int eventId = MemoryPanelSc.panelScConfig.eventId!;
-      view = 'v_attendance_by_event_and_place';
-      query ="SELECT total, place_id, place_name, event_id FROM public.$view"
+      view = 'v_total_attendance_by_event_and_place';
+      query ="SELECT total, place_id, place_name, event_id FROM public.$view "
           "where event_id = $eventId  order by total desc;";
     }
     bool testMode = GetStorage().read(Memory.KEY_TEST_MODE) ?? false;
@@ -79,12 +81,10 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
         settings: ConnectionSettings(sslMode: SslMode.require),
       );
       success = true;
-      print('try new connection..');
-
-
-
+      print('try loading attendance..');
       print('query $query');
       final result0 = await conn.execute(query);
+      attendanceLoaded = true;
       MemoryPanelSc.attendanceByGroup.clear();
       for (final row in result0) {
         String placeName = row[2].toString();
@@ -95,18 +95,18 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
         MemoryPanelSc.attendanceByGroup.add(attendanceByGroup);
 
       }
-      print('result0.affectedRows      ${result0.affectedRows}');
+      print('affectedRows      ${result0.affectedRows}');
       conn.close();
 
     } catch (e) {
-      print('Error connecting to PostgreSQL: $e');
+      print('Error connecting to PostgresSQL: $e');
       // Return false or throw an exception as per your error handling strategy
     } finally{
       return success;
     }
 
   }
-  Future<bool> connectToPostgresAttendance() async{
+  Future<bool?> connectToPostgresAttendance() async{
     if(timerStopped){
       return false ;
     }
@@ -147,8 +147,7 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
             event_date= Date(NOW() + INTERVAL  '1 minute' *time_offset_minutes )
             and  pos_id =$posId ;
         """;
-
-
+      
       final resultConfig = await conn.execute(getConfig);
       if (resultConfig.isNotEmpty) {
         var row = resultConfig[0];
@@ -198,30 +197,32 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
 
 
 
+      } else {
+        return false;
       }
       conn.close();
       return true;
     } catch (e) {
-      print('Error connecting to PostgreSQL: $e');
+      print('Error connecting to PostgresSQL: $e');
       // Return false or throw an exception as per your error handling strategy
-      return false;
+      return null;
     }
 
   }
-
-  Future<bool> connectToPostgresAndLoadAttendanceOld() async{
+  Future<bool?> connectToPostgresAdmin(String code) async{
+    if(timerStopped){
+      return false ;
+    }
 
     String host = MemoryPanelSc.attendanceDbHost;
     String dbName = MemoryPanelSc.attendanceDbName;
     int dbPort = MemoryPanelSc.attendanceDbPort;
     String dbUser = MemoryPanelSc.attendanceDbUser;
     String dbPassword = MemoryPanelSc.attendanceDbPassword;
-    bool success = false;
-    bool testMode = GetStorage().read(Memory.KEY_TEST_MODE) ?? false;
-
+    late Connection conn ;
 
     try {
-      final conn = await Connection.open(
+        conn = await Connection.open(
         Endpoint(
           host: host,
           database: dbName,
@@ -234,77 +235,41 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
         // SSL and you should swap out the mode with `SslMode.verifyFull`.
         settings: ConnectionSettings(sslMode: SslMode.require),
       );
-      success = true;
-      print('try new connection..');
-      if(MemoryPanelSc.panelScConfig.id==null) {
-        String panelId = GetStorage().read(Memory.KEY_ID) ?? '1';
-
-        String getConfig = 'SELECT id, event_name, logo_url, landing_url, barcode_length,'
-            ' place_id_length, show_progress_bar_each_x_times, time_offset_minutes'
-            ' FROM public.config WHERE id =$panelId;';
-        final resultConfig = await conn.execute(getConfig);
-        if (resultConfig.isNotEmpty) {
-          var row = resultConfig[0];
-          int? id = int.tryParse(row[0].toString());
-          String eventName = row[1].toString();
-          String logoUrl = row[2].toString();
-          String landingUrl = row[3].toString();
-          int? barcodeLength = int.tryParse(row[4].toString());
-          int? placeIdLength = int.tryParse(row[5].toString());
-          int? showProgressBarEachXTimes = int.tryParse(row[6].toString());
-          int? timeOffsetMinutes = int.tryParse(row[7].toString());
-
-          MemoryPanelSc.panelScConfig = PanelScConfig(id: id,
-            eventName: eventName,
-            logoUrl: logoUrl,
-            landingUrl: landingUrl,
-            barcodeLength: barcodeLength,
-            placeIdLength: placeIdLength,
-            showProgressBarEachXTimes: showProgressBarEachXTimes,
-            timeOffsetMinutes: timeOffsetMinutes,
-          );
-        }
+      print('login..');
+      loadedConfig = true;
+      String posId = GetStorage().read(Memory.KEY_POS_ID) ?? '1';
+      String codeFilter = '';
+      if(code.isNotEmpty){
+        codeFilter = " and code = '$code'";
       }
-      String view = 'v_total_attendance';
-      if(testMode){
-        view = 'v_total_attendance_test';
+      //function_id=5 = admin
+      String getConfig = """
+        SELECT id, name, function_id, code, isactive
+	      FROM public.pos WHERE id =$posId  and function_id = 5
+            $codeFilter ;
+        """;
+      print('getConfig $getConfig');
+      final resultConfig = await conn.execute(getConfig);
+
+      if (resultConfig.isNotEmpty) {
+        GetStorage().write(Memory.KEY_ADMIN_CODE, code);
+        return true;
       }
-      String date = DateTime.now().toIso8601String();
-      date = date.split('T').first;
 
-
-      String query ="SELECT total, place_id, place_name FROM public.$view"
-          " order by total desc;";
-
-      print('query $query');
-      final result0 = await conn.execute(query);
-      MemoryPanelSc.attendanceByGroup.clear();
-      for (final row in result0) {
-        String placeName = row[2].toString();
-        int? placeId = int.tryParse(row[1].toString());
-        placeName = placeName.toUpperCase();
-        Place place = Place(id: placeId,name: placeName);
-        AttendanceByGroup attendanceByGroup = AttendanceByGroup(total: int.tryParse(row[0].toString()),place: place);
-        MemoryPanelSc.attendanceByGroup.add(attendanceByGroup);
-
-      }
-      print('result0.affectedRows      ${result0.affectedRows}');
-
-      conn.close();
-
-
-
-
+      return false;
     } catch (e) {
-      print('Error connecting to PostgreSQL: $e');
+      print('Error connecting to PostgresSQL: $e');
       // Return false or throw an exception as per your error handling strategy
-    } finally{
-      return success;
+      return null;
+    } finally {
+      conn.close();
     }
 
   }
+
+
   Future<bool> connectToPostgresAndLoadTicket(IdempiereUser user) async{
-    //String host = Memory.APP_POSTGRESQL_HOST_NAME;
+    //String host = Memory.APP_PostgresSQL_HOST_NAME;
     String host = Memory.APP_HOST_NAME_WITHOUT_HTTP;
 
     String dbName = Memory.dbName;
@@ -451,7 +416,7 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
 
 
     } catch (e) {
-      print('Error connecting to PostgreSQL: $e');
+      print('Error connecting to PostgresSQL: $e');
       // Return false or throw an exception as per your error handling strategy
     } finally{
       return success;
@@ -539,14 +504,103 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
       conn.close();
       return events;
     } catch (e) {
-      print('Error connecting to PostgreSQL: $e');
+      print('Error connecting to PostgresSQL: $e');
       // Return false or throw an exception as per your error handling strategy
       return events;
     }
 
   }
+  void showProgressDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 16),
+                Text("Loading..."),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
   Future<void> goToEventConfigPage(BuildContext context) async {
-    showTotalAttendanceByEvent =  await Get.toNamed(Memory.ROUTE_PANEL_EVENT_CONFIG_PAGE);
-    //Get.offNamedUntil(Memory.ROUTE_PANEL_EVENT_CONFIG_PAGE, (route) => false);
+    isClosing.value = true;
+    timerStopped = true;
+    timer?.cancel();
+    clockTimer?.cancel();
+    await Future.doWhile(() async {
+      await Future.delayed(Duration(seconds: 2)); // Wait for 2 seconds
+      print('awaiting isLoading.value to false== actual value ${isLoading.value}');
+
+      return isLoading.value;
+    });
+
+    isClosing.value = false;
+    timerStopped = false;
+    isTimerStarted = false;
+    Get.toNamed(Memory.ROUTE_PANEL_EVENT_CONFIG_PAGE);
+
+  }
+  void showAutoCloseMessages(BuildContext context, String message,Color color,int secounds) async {
+    await AwesomeDialog(
+      dialogBackgroundColor: color,
+      context: context,
+      animType: AnimType.scale,
+      dialogType: DialogType.info,
+      autoDismiss: true,
+      autoHide: Duration(seconds: secounds),
+      body: Center(child: Text(
+        message,
+        style: TextStyle(fontStyle: FontStyle.italic),
+      ),),
+      title: '${Messages.EVENT}?',
+      desc:   '',
+
+    ).show();
+
+  }
+  void showAutoCloseQuestionMessages(BuildContext context, String message,Color color,int secounds) async {
+    await AwesomeDialog(
+      dialogBackgroundColor: color,
+      context: context,
+      animType: AnimType.scale,
+      dialogType: DialogType.question,
+      autoDismiss: true,
+      autoHide: Duration(seconds: secounds),
+      body: Center(child: Text(
+        message,
+        style: TextStyle(fontStyle: FontStyle.italic),
+      ),),
+      title: '${Messages.EVENT}?',
+      desc:   '',
+
+    ).show();
+
+  }
+  void showAutoCloseErrorMessages(BuildContext context, String message,Color color,int seconds) async {
+    await AwesomeDialog(
+      dialogBackgroundColor: color,
+      context: context,
+      animType: AnimType.scale,
+      dialogType: DialogType.error,
+      autoDismiss: true,
+      autoHide: Duration(seconds: seconds),
+      body: Center(child: Text(
+        message,
+        style: TextStyle(fontStyle: FontStyle.italic),
+      ),),
+      title: '${Messages.EVENT}?',
+      desc:   '',
+
+    ).show();
+
   }
 }

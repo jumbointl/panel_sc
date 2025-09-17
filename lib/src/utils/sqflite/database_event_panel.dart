@@ -219,7 +219,7 @@ class DatabaseEventPanel {
           '$COLUMN_DATE_TIME,$COLUMN_CONFIG_ID) VALUES ';
       for (int i = 0; i < attendanceList.length-1; i++) {
         query = "$query ('${attendanceList[i].qr}',${attendanceList[i].placeId},"
-            "${attendanceList[i].posId},${attendanceList[i].configId}),";
+            "${attendanceList[i].posId},$expressionDateTime,${attendanceList[i].configId}),";
       }
       query = "$query ('${attendanceList[attendanceList.length-1].qr}',"
           "${attendanceList[attendanceList.length-1].placeId},"

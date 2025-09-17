@@ -85,7 +85,10 @@ class MemoryPanelSc extends Memory {
   static FunctionPanelSc callerFunctionPanelSc =FunctionPanelSc(id:FUNCTION_CALLER,name: Messages.CALLER,active:1);
   static FunctionPanelSc showAttendanceFunctionPanelSc =FunctionPanelSc(id:FUNCTION_SHOW_ATTENDANCE,name: Messages.SHOW_ATTENDANCE,active:1);
   static FunctionPanelSc registerAttendanceFunctionPanelSc =FunctionPanelSc(id:FUNCTION_REGISTER_ATTENDANCE ,name: Messages.REGISTER_ATTENDANCE,active:1);
-
+  static FunctionPanelSc adminAttendanceFunctionPanelSc =FunctionPanelSc(id:FUNCTION_ADMIN_ATTENDANCE ,name: Messages.ADMINISTRATOR,active:1);
+  static List<FunctionPanelSc> getListAllFunctionAttendance(){
+    return [showAttendanceFunctionPanelSc,registerAttendanceFunctionPanelSc,adminAttendanceFunctionPanelSc];
+  }
   static List<FunctionPanelSc> getListFunctionPanelSc(){
     switch(Memory.TYPE_OF_PANEL){
       case Memory.EVENT_PANEL:
@@ -207,5 +210,16 @@ class MemoryPanelSc extends Memory {
   }
   static bool timerStarted = false;
   static bool timerStopped = false;
+
+  static bool showTotalAttendanceByEvent=false;
+
+  static int maxPanelAdminId = 1000;
+
+  static const int MAX_LENGTH_POS_NAME=10;
+  static const int MAX_LENGTH_EVENT_NAME=30;
+  static const int MAX_LENGTH_PLACE_NAME = 40;
+
+  static int SQL_QUERY_ALL_LIMIT=10;
+  static String IMAGE_NO_IMAGE='assets/images/no_image.png';
 
 }

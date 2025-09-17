@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 import 'package:solexpress_panel_sc/src/data/messages.dart';
-import 'package:solexpress_panel_sc/src/idempiere/common/idempiere_controller_model.dart';
 import 'package:solexpress_panel_sc/src/models/attendance.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -22,7 +21,9 @@ class RegisterAttendanceController extends PanelControllerModel {
   late DatabaseEventPanel databaseEventPanel;
   final RxBool isLogout = false.obs;
 
+  @override
   bool timerStopped =false;
+  @override
   Timer? timer = MemoryPanelSc.registerAttendanceTimer;
 
   RegisterAttendanceController(){

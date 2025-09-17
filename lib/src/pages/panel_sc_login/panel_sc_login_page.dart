@@ -13,40 +13,64 @@ class PanelScLoginPage extends StatelessWidget {
   PanelScLoginPage({super.key});
   final PanelScLoginController controller = Get.put(PanelScLoginController());
   double fontSize = 15;
+  double texFieldHeight = 35;
 
   @override
   Widget build(BuildContext context) {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.stopTimers();
-      if (controller.autoLogin.value) {
+      if (controller.autoLogin.value && !controller.isLoaded) {
         controller.login(context);
         controller.loadedConfig = false;
       }
     });
-    return Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          centerTitle: true,
-          title: _textAppName(),
-           
-        ),
-       /* bottomNavigationBar: SizedBox(
-          height: 50,
-          child: _setCustomUrl(),
-        ), */// Pass controller
+    return DefaultTabController(
+      length: 2, // Number of tabs
+      child: Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            centerTitle: true,
+            title: _textAppName(),
+            bottom: TabBar(
+              labelColor: Colors.purple,
+              labelStyle: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),
+              tabs: [
+                Tab(text: Messages.LOGIN,),
+                Tab(text: Messages.CONFIG),
+              ],
+            ),
+          ),
+         /* bottomNavigationBar: SizedBox(
+            height: 50,
+            child: _setCustomUrl(),
+          ), */// Pass controller
 
-        body: SafeArea(
-            child: Container(
-              width: double.infinity,
-              height: double.infinity,
-              alignment: Alignment.center,
-              child: Obx(() =>_boxForm(context), )),
-      )
+          body: SafeArea(
+              child: TabBarView(
+                children: [
+                  // Content for Tab 1
+                  Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    alignment: Alignment.center,
+                    child: Obx(() =>_boxForm1(context)),
+                  ),
+                  // Content for Tab 2
+                  Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    alignment: Alignment.center,
+                    child: Obx(() =>_boxForm2(context)),
+                  ),
+                ],
+              ),
+        )
+        ),
     );
   }
 
-  Widget _boxForm(BuildContext context){ // Add controller and showIcon parameters
+  Widget _boxForm1(BuildContext context){ // Add controller and showIcon parameters
     bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
     double formHeight = MediaQuery.of(context).size.height * 0.8;
     if(controller.attendancePanel.value){
@@ -62,66 +86,30 @@ class PanelScLoginPage extends StatelessWidget {
           child: Column(
             spacing: 3,
             children: [
-              Row(
-                spacing: 10,
-                children: [
-                  Text('POS',
-                      style: TextStyle(
-                          fontSize: fontSize, fontWeight: FontWeight.bold,
-                          color: Colors.black)),
-                  Spacer(),
-                  SizedBox(
-                    height: 50,
-                    width: 150,
-                    child: TextField(
-                      controller: controller.posIdController,
-                      obscureText: false,
-                      keyboardType: TextInputType.text,
-                      decoration: InputDecoration(
-
-                        filled: true,
-                        fillColor: Colors.white,
-                        hintText: Messages.POS,
-                        //prefixIcon: Icon(Icons.numbers),
-                        border: OutlineInputBorder(),
-                      ),
+              ListTile(
+                leading:Text('POS',
+                    style: TextStyle(
+                        fontSize: fontSize, fontWeight: FontWeight.bold,
+                        color: Colors.black)),
+                title: SizedBox(
+                  height: texFieldHeight,
+                  width: double.infinity,
+                  child: TextField(
+                    textAlignVertical: TextAlignVertical.bottom,
+                    controller: controller.posIdController,
+                    obscureText: false,
+                    keyboardType: TextInputType.text,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      hintText: Messages.POS,
+                      //prefixIcon: Icon(Icons.numbers),
+                      border: OutlineInputBorder(),
                     ),
                   ),
-
-                ],
-
-              ),
-              Row(
-                spacing: 10,
-                children: [
-                  Text(Messages.EVENT,
-                      style: TextStyle(
-                          fontSize: fontSize, fontWeight: FontWeight.bold,
-                          color: Colors.black)),
-                  Spacer(),
-                  SizedBox(
-                    height: 50,
-                    width: 150,
-                    child: TextField(
-                      controller: controller.panelIdController,
-                      obscureText: false,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-
-                        filled: true,
-                        fillColor: Colors.white,
-                        hintText: Messages.EVENT,
-                        //prefixIcon: Icon(Icons.numbers),
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-
-                ],
+                ),
 
               ),
-
-              //_dropDownFunction(),
 
               Row(
                 spacing: 6,
@@ -180,58 +168,6 @@ class PanelScLoginPage extends StatelessWidget {
                   padding: EdgeInsets.symmetric(horizontal: 80, vertical: 10),
                 ),
               ),
-              Text('${Messages.FONT_SIZE_ADJUSTMENT} %',
-                  style: TextStyle(
-                      fontSize: fontSize, fontWeight: FontWeight.bold,
-                      color: Colors.black)
-              ),
-              TextField(
-                controller: controller.fontSizeAdjustmentController,
-                obscureText: false,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: '${Messages.FONT_SIZE_ADJUSTMENT} %',
-                  prefixIcon: Icon(Icons.percent),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              Text('${Messages.LOGO_SIZE_ADJUSTMENT} %', style: TextStyle(
-                  fontSize: fontSize, fontWeight: FontWeight.bold,
-                  color: Colors.black),),
-              TextField(
-                controller: controller.logoSizeAdjustmentController,
-                obscureText: false,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: '${Messages.LOGO_SIZE_ADJUSTMENT} %',
-                  prefixIcon: Icon(Icons.percent),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              Text(Messages.CLOCK_RIGHT_MARGIN_ADJUSTMENT,style: TextStyle(
-                  fontSize: fontSize, fontWeight: FontWeight.bold,
-                  color: Colors.black)),
-              TextField(
-                controller: controller.clockRightMarginAdjustmentController,
-                obscureText: false,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: Messages.CLOCK_RIGHT_MARGIN_ADJUSTMENT,
-                  prefixIcon: Icon(Icons.numbers),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-
-
 
             ],
           ),
@@ -256,42 +192,51 @@ class PanelScLoginPage extends StatelessWidget {
         child: Column(
           spacing: 3,
           children: [
-            TextField(
-              controller: controller.panelIdController,
-              obscureText: false,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-
-                filled: true,
-                fillColor: Colors.white,
-                hintText: Messages.ID,
-                prefixIcon: Icon(Icons.numbers),
-                border: OutlineInputBorder(),
+            SizedBox(
+              height: texFieldHeight,
+              child: TextField(
+                textAlignVertical: TextAlignVertical.bottom,
+                controller: controller.panelIdController,
+                obscureText: false,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: Messages.ID,
+                  prefixIcon: Icon(Icons.numbers),
+                  border: OutlineInputBorder(),
+                ),
               ),
             ),
-            TextField(
-              controller: controller.userNameController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-
-                filled: true,
-                fillColor: Colors.white,
-                hintText: Messages.NAME,
-                prefixIcon: Icon(Icons.person),
-                border: OutlineInputBorder(),
+            SizedBox(
+              height: texFieldHeight,
+              child: TextField(
+                textAlignVertical: TextAlignVertical.bottom,
+                controller: controller.userNameController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: Messages.NAME,
+                  prefixIcon: Icon(Icons.person),
+                  border: OutlineInputBorder(),
+                ),
               ),
             ), // Pass controller
-            TextField(
-              controller: controller.passwordController,
-              obscureText: controller.showPassword.value ? false : true,
-              keyboardType: TextInputType.text,
-              decoration: InputDecoration(
-
-                filled: true,
-                fillColor: Colors.white,
-                hintText: Messages.PASSWORD,
-                prefixIcon: Icon(Icons.lock),
-                border: OutlineInputBorder(),
+            SizedBox(
+              height: texFieldHeight,
+              child: TextField(
+                textAlignVertical: TextAlignVertical.bottom,
+                controller: controller.passwordController,
+                obscureText: controller.showPassword.value ? false : true,
+                keyboardType: TextInputType.text,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: Messages.PASSWORD,
+                  prefixIcon: Icon(Icons.lock),
+                  border: OutlineInputBorder(),
+                ),
               ),
             ),
             Row(
@@ -425,7 +370,189 @@ class PanelScLoginPage extends StatelessWidget {
     );
 
   } // Pass controller
+  Widget _boxForm2(BuildContext context){ // Add controller and showIcon parameters
+    bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    double formHeight = MediaQuery.of(context).size.height * 0.8;
+    if(controller.attendancePanel.value){
+      if(!controller.showConfiguration.value){
+        return Container(
+          height: formHeight,
+          width: controller.getMaximumInputFieldWidth(context),
+          margin: EdgeInsets.only(top: 10,
+              left: 20,right: 20),
+          //color: Colors.white,
+          child: Center(
+            child: SizedBox(
+              height: texFieldHeight+10,
+              width: double.infinity, // Make TextButton take full width
+              child: TextButton(
+                  style: TextButton.styleFrom(
+                    side: BorderSide(color: Colors.white, width: 1), // Add border here
+                    backgroundColor: Colors.black,
+                    shape: RoundedRectangleBorder( // Match TextField border
+                      borderRadius: BorderRadius.circular(4.0), // Adjust as needed
+                    ),
+                  ),
+                  onPressed: (){controller.showConfiguration.value = true;},
+                  child: Text(Messages.SHOW_CONFIGURATION,style: TextStyle(
+                      fontSize: fontSize, fontWeight: FontWeight.bold,
+                      color: Colors.white))),
+            ),
+          ),
 
+
+        );
+      }
+      return Container(
+        height: formHeight,
+        width: controller.getMaximumInputFieldWidth(context),
+        margin: EdgeInsets.only(top: 10,
+            left: 20,right: 20),
+        color: Colors.white,
+
+        child:  SingleChildScrollView(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            spacing: 3,
+            children: [
+              SizedBox(
+                height: texFieldHeight*5,
+                child: TextField(
+                  textAlignVertical: TextAlignVertical.bottom,
+                  controller: controller.urlController,
+                  obscureText: false,
+                  maxLines: 6,
+                  keyboardType: TextInputType.text,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: Messages.DATABASE_URL_WITHOUT_HTTP,
+                    prefixIcon: Icon(Icons.link),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: texFieldHeight,
+                child: Text('${Messages.FONT_SIZE_ADJUSTMENT} %',
+                    style: TextStyle(
+                        fontSize: fontSize, fontWeight: FontWeight.bold,
+                        color: Colors.black)),
+              ),
+              SizedBox(
+                height: texFieldHeight,
+                child: TextField(
+                  textAlignVertical: TextAlignVertical.bottom,
+                  controller: controller.fontSizeAdjustmentController,
+                  obscureText: false,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: '${Messages.FONT_SIZE_ADJUSTMENT} %',
+                    prefixIcon: Icon(Icons.percent),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: texFieldHeight,
+                child: Text('${Messages.LOGO_SIZE_ADJUSTMENT} %',
+                    style: TextStyle(
+                        fontSize: fontSize,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black)),
+              ),
+              SizedBox(
+                height: texFieldHeight,
+                child: TextField(
+                  textAlignVertical: TextAlignVertical.bottom,
+                  controller: controller.logoSizeAdjustmentController,
+                  obscureText: false,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: '${Messages.LOGO_SIZE_ADJUSTMENT} %',
+                    prefixIcon: Icon(Icons.percent),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: texFieldHeight,
+                child: Text(Messages.CLOCK_RIGHT_MARGIN_ADJUSTMENT,
+
+                    style: TextStyle(
+                        fontSize: fontSize,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black)),
+              ),
+              SizedBox(
+                height: texFieldHeight,
+                child: TextField(
+                  textAlignVertical: TextAlignVertical.bottom,
+                  controller: controller.clockRightMarginAdjustmentController,
+                  obscureText: false,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: Messages.CLOCK_RIGHT_MARGIN_ADJUSTMENT,
+                    prefixIcon: Icon(Icons.numbers),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              SizedBox(height: 30),
+              SizedBox(
+                height: texFieldHeight+10,
+                width: double.infinity, // Make TextButton take full width
+                child: TextButton(
+                    style: TextButton.styleFrom(
+                      side: BorderSide(color: Colors.black, width: 1), // Add border here
+                      backgroundColor: Colors.amber[200],
+                      shape: RoundedRectangleBorder( // Match TextField border
+                        borderRadius: BorderRadius.circular(4.0), // Adjust as needed
+                      ),
+                    ),
+                    onPressed: (){controller.showConfiguration.value = false;},
+                    child: Text(Messages.HIDE_CONFIGURATION,style: TextStyle(
+                    fontSize: fontSize, fontWeight: FontWeight.bold,
+                    color: Colors.black))),
+              ),
+            ],
+          ),
+        ),
+
+      );
+
+    }
+
+
+
+
+    return Container(
+      height: formHeight,
+      width: controller.getMaximumInputFieldWidth(context),
+      margin: EdgeInsets.only(top: 10,
+          left: 20,right: 20),
+      color: Colors.white,
+
+      child:  SingleChildScrollView(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          spacing: 3,
+          children: [
+              Center(child: Text(Messages.NOT_ENABLED),),
+
+          ],
+        ),
+      ),
+
+    );
+
+  }
   Widget _textAppName(){
     // No controller needed for this widget
     String title = Messages.IDEMPIERE_APP_NAME;
@@ -443,7 +570,7 @@ class PanelScLoginPage extends StatelessWidget {
 
     return Text(title,
       style: TextStyle(
-        fontSize: 20,
+        fontSize: 30,
         fontWeight: FontWeight.bold,
         color: Colors.black
       ),

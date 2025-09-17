@@ -32,27 +32,31 @@ class EventConfigController extends PanelControllerModel {
   void updateEventConfig() {
     if(config.id!=null){
       MemoryPanelSc.panelScConfig = config;
+      MemoryPanelSc.showTotalAttendanceByEvent = false;
       String date = DateTime.now().toIso8601String().split('T').first;
-      if(config.eventDate!=date){
+      String dateConfig = config.eventDate ?? '';
+      if(dateConfig.isNotEmpty){
+        dateConfig = dateConfig.split(' ').first;
+      }
+      print('------------------ $dateConfig ,$date ,${dateConfig==date}');
+      if(dateConfig!=date){
+        print('-----------------ROUTE_PANEL_SC_SHOW_ATTENDANCE_PAGE');
         Get.offNamedUntil(Memory.ROUTE_PANEL_SC_SHOW_ATTENDANCE_PAGE,(route)=>false);
       } else {
-        Get.offNamedUntil(Memory.ROUTE_PANEL_SC_SHOW_ATTENDANCE_LIVE_PAGE, (route) => false);
+        print('------------------ROUTE_PANEL_SC_SHOW_ATTENDANCE_LIVE_PAGE $dateConfig ,$date ,${dateConfig==date}');
+        Get.offNamedUntil(Memory.ROUTE_PANEL_SC_SHOW_ATTENDANCE_LIVE_PAGE,
+                (route) => false);
       }
 
+    } else {
+      Get.offNamedUntil(Memory.ROUTE_PANEL_SC_SHOW_ATTENDANCE_LIVE_PAGE,
+              (route) => false);
     }
   }
   void setFilterTotalByEvent(BuildContext context) {
-    Get.offNamedUntil(Memory.ROUTE_PANEL_SC_SHOW_ATTENDANCE_LIVE_PAGE, (route) => false
-        ,arguments: {Memory.KEY_SHOW_TOTAL_ATTENDANCE_BY_EVENT,true});
-    //Get.back(result: true);
-    /*if(config.id!=null){
-      MemoryPanelSc.panelScConfig = config;
-      Get.offNamedUntil(Memory.ROUTE_PANEL_SC_SHOW_ATTENDANCE_PAGE, (route) => false
-          ,arguments: {Memory.KEY_SHOW_TOTAL_ATTENDANCE_BY_EVENT,true});
-    }*/
+    MemoryPanelSc.showTotalAttendanceByEvent = true;
+    Get.offNamedUntil(Memory.ROUTE_PANEL_SC_SHOW_ATTENDANCE_LIVE_PAGE, (route) => false);
+
   }
-
-
-
 
 }

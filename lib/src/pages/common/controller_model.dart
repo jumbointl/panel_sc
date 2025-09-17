@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:amount_input_formatter/amount_input_formatter.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:confirm_dialog/confirm_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -18,14 +19,18 @@ import '../../models/host.dart';
 import '../../models/invoice_number.dart';
 import '../../models/order.dart';
 import '../../models/order_status.dart';
+import '../../models/panel_sc_config.dart';
 import '../../models/payment.dart';
 import '../../models/payment_type.dart';
+import '../../models/place.dart';
+import '../../models/pos.dart';
 import '../../models/product.dart';
 import '../../models/product_price_by_group.dart';
 import '../../models/response_api.dart';
 import '../../models/rol.dart';
 import '../../models/search_result_list.dart';
 import '../../models/society.dart';
+import '../../models/sol_express_event.dart';
 import '../../models/status.dart';
 import '../../models/user.dart';
 import '../../models/vat.dart';
@@ -190,12 +195,58 @@ class ControllerModel extends GetxController {
     }
     return null;
   }
+  SolExpressEvent? getSolExpressEventById(List<SolExpressEvent> eventsResult, int id) {
+    for(int i=0; i<eventsResult.length;i++) {
+      SolExpressEvent ob = eventsResult[i];
+      if (ob.id == id) {
+        return ob;
+      }
+    }
+    return null;
+  }
+  Pos? getPosById(List<Pos>? list, int? id){
+    if(list==null || list.isEmpty){
+      return null;
+    }
+    for(int i=0; i<list.length;i++){
+      Pos ob = list[i];
+      if(ob.id==id){
+        return ob ;
+      }
+    }
+    return null;
+  }
+
   Payment? getPaymentById(List<Payment>? list, int? id){
     if(list==null || list.isEmpty){
       return null;
     }
     for(int i=0; i<list.length;i++){
       Payment ob = list[i];
+      if(ob.id==id){
+        return ob ;
+      }
+    }
+    return null;
+  }
+  PanelScConfig? getPanelScConfigById(List<PanelScConfig>? list, int? id){
+    if(list==null || list.isEmpty){
+      return null;
+    }
+    for(int i=0; i<list.length;i++){
+      PanelScConfig ob = list[i];
+      if(ob.id==id){
+        return ob ;
+      }
+    }
+    return null;
+  }
+  Place? getPlaceById(List<Place>? list, int? id){
+    if(list==null || list.isEmpty){
+      return null;
+    }
+    for(int i=0; i<list.length;i++){
+      Place ob = list[i];
       if(ob.id==id){
         return ob ;
       }
@@ -1253,6 +1304,34 @@ class ControllerModel extends GetxController {
     }
     return society;
 
+  }
+  Future<void> showAutoCloseMessage(BuildContext context,String title,String message,int milliseconds) async {
+    await AwesomeDialog(
+      context: context,
+      dialogType: DialogType.info,
+      borderSide: const BorderSide(
+        color: Colors.green,
+        width: 2,
+      ),
+      width: MediaQuery.of(context).size.width * 0.9 > 500 ? 500 : MediaQuery.of(context).size.width * 0.9,
+      buttonsBorderRadius: const BorderRadius.all(
+        Radius.circular(2),
+      ),
+      dismissOnTouchOutside: true,
+      dismissOnBackKeyPress: false,
+      autoDismiss: true,
+      autoHide: Duration(milliseconds: milliseconds),
+      headerAnimationLoop: false,
+
+      animType: AnimType.bottomSlide,
+      title: title,
+      desc: message,
+      showCloseIcon: true,
+      btnOkText: Messages.OK,
+      btnOkOnPress: () {
+        Navigator.of(context).pop(true);
+      },
+    ).show();
   }
 
 }

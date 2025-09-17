@@ -46,4 +46,12 @@ class ObjectWithNameAndId {
 
     return false;
   }
+  bool isActiveString(String data) {
+    int? isActive = int.tryParse(data);
+    if(isActive==null || isActive==0){
+      return false;
+    }
+    return true;
+
+  }
 }
