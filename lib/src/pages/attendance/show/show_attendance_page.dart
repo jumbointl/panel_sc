@@ -141,8 +141,6 @@ class ShowAttendancePage extends StatelessWidget {
 
     // let int total = attendanceByGroups total
     total = attendanceByGroups.fold(0, (sum, item) => sum + (item.total ?? 0));
-    double widthTotalAttendance = (MediaQuery.of(context).size.width-MemoryPanelSc.EVENT_PANEL_LOGO_WIDTH)/5+
-        MemoryPanelSc.clockRightMarginAdjustment;
     return Container(
         width: double.infinity,
         //height: contaninerHeight,

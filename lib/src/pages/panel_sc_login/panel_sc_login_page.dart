@@ -371,7 +371,6 @@ class PanelScLoginPage extends StatelessWidget {
 
   } // Pass controller
   Widget _boxForm2(BuildContext context){ // Add controller and showIcon parameters
-    bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
     double formHeight = MediaQuery.of(context).size.height * 0.8;
     if(controller.attendancePanel.value){
       if(!controller.showConfiguration.value){
@@ -573,18 +572,6 @@ class PanelScLoginPage extends StatelessWidget {
         fontSize: 30,
         fontWeight: FontWeight.bold,
         color: Colors.black
-      ),
-    );
-  }
-  Widget _setCustomUrl(){ // Pass controller
-    return GestureDetector(
-      onLongPress: ()=>controller.goToSetUrlPage(),
-      child: Container(
-        alignment: Alignment.center,
-        margin: EdgeInsets.symmetric(horizontal: 30),
-        child: Text(Messages.SET_CUSTOM_URL,
-          style: TextStyle(color: Colors.black,
-          fontWeight: FontWeight.bold, fontSize: 17),),
       ),
     );
   }

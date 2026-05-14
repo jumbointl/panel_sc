@@ -1,3 +1,4 @@
+import 'package:solexpress_panel_sc/src/widgets/safe_bottom_bar.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -43,27 +44,29 @@ class IdempiereFilterCreatePageModel extends StatelessWidget implements Idempier
   Widget build(BuildContext context) {
     return Obx (() => Scaffold(
 
-        bottomNavigationBar: Container(
-          color: bottomNavigationBarColor,
-          height: 60,
-          child: Column(
-            children: [
-              SizedBox(height: 10),
-              IconButton(
-                icon: isLoading.value
-                    ? CircularProgressIndicator(color: Colors.redAccent)
-                    : Text(Messages.FIND_BY_CONDITION),
-                onPressed: () => findByCondition(context),
-                tooltip: isLoading.value ? Messages.LOADING
-                    : Messages.FIND_BY_CONDITION,
-                style: IconButton.styleFrom(
-                  backgroundColor: isLoading.value
-                      ? Colors.amber
-                      : Memory.PRIMARY_COLOR,
-                  fixedSize: Size(buttonWidth, 40),
+        bottomNavigationBar: SafeBottomBar(
+          child: Container(
+            color: bottomNavigationBarColor,
+            height: 60,
+            child: Column(
+              children: [
+                SizedBox(height: 10),
+                IconButton(
+                  icon: isLoading.value
+                      ? CircularProgressIndicator(color: Colors.redAccent)
+                      : Text(Messages.FIND_BY_CONDITION),
+                  onPressed: () => findByCondition(context),
+                  tooltip: isLoading.value ? Messages.LOADING
+                      : Messages.FIND_BY_CONDITION,
+                  style: IconButton.styleFrom(
+                    backgroundColor: isLoading.value
+                        ? Colors.amber
+                        : Memory.PRIMARY_COLOR,
+                    fixedSize: Size(buttonWidth, 40),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
 
@@ -237,25 +240,6 @@ class IdempiereFilterCreatePageModel extends StatelessWidget implements Idempier
           )),
         ),
       ],
-    );
-  }
-
-  Widget _imageIdempiereFilter(IdempiereFilter idempiereFilter) {
-    return SizedBox(
-      height: 70,
-      width: 70,
-      // padding: EdgeInsets.all(2),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: FadeInImage(
-          image: idempiereFilter.image != null
-              ? NetworkImage(idempiereFilter.image!)
-              : AssetImage(Memory.IMAGE_NO_IMAGE) as ImageProvider,
-          fit: BoxFit.cover,
-          fadeInDuration: Duration(milliseconds: 50),
-          placeholder:  AssetImage(Memory.IMAGE_NO_IMAGE),
-        ),
-      ),
     );
   }
 

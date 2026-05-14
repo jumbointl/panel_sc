@@ -32,7 +32,6 @@ class Ticket extends ObjectWithNameAndId {
 
   String display(){
     String placeName = place?.name ?? '';
-    String placeId = place?.id?.toString() ?? '';
 
     String name = owner?.name ?? '';
     if(name==''){

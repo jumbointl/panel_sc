@@ -273,7 +273,6 @@ class RelativeTimeUtil {
 
 
 
-    return diff.inDays;
   }
   static DateTime? getDateTimeFromSavedGetStorageMicrosecondsSinceEpochLocal(int? timestamp) {
     // GetStorage devuelve mas digitos que 13;

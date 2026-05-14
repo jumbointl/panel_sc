@@ -433,21 +433,6 @@ class ProductPriceByGroupCreatePage extends StatelessWidget {
       ),
     );
   }
-  Widget _textFieldIdProduct(){
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 10,vertical: 10),
-
-      child: TextField(
-        controller: controller.idController,
-        keyboardType: TextInputType.number,
-        readOnly: true,
-        decoration: InputDecoration(
-          hintText: Messages.PRODUCT,
-          prefixIcon: Icon(Icons.card_membership),
-        ),
-      ),
-    );
-  }
   Widget _textFieldPrice(){
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 10,vertical: 10),

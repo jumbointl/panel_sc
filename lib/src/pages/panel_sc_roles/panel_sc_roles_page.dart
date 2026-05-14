@@ -20,7 +20,6 @@ class PanelScRolesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double fileHeight = MediaQuery.of(context).size.height/8;
     Host host = GetStorage().read(Memory.KEY_HOST) ?? Host();
     Color color = Colors.white;
     if(host.id!=null){

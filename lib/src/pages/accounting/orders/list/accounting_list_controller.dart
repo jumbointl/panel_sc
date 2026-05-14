@@ -163,7 +163,7 @@ abstract class AccountingListController extends ControllerModel {
     } else if(ordersExcel.path!=null){
       excelFileName = ordersExcel.path;
       print('OPEN FILE IN OTHER APP --${ordersExcel.path ?? ''}');
-      var res = await OpenFilex.open(ordersExcel.path!);
+      await OpenFilex.open(ordersExcel.path!);
     }
 
 

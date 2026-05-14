@@ -96,9 +96,6 @@ class OrdersMapController extends ControllerModel {
   void updateLocation() async {
 
     try{
-      double latWarehouse =  Memory.INITIAL_LATITUDE;
-      double lngWarehouse =  Memory.INITIAL_LONGITUDE;
-
       await _determinePosition();
       position = await Geolocator.getLastKnownPosition(); // LAT Y LNG (ACTUAL)
 

@@ -115,21 +115,6 @@ class WarehouseHomeOrdersListController extends WarehouseOrdersListController {
     orderStatus.insert(0, data);
     isLoading.value = false;
   }
-  Future<void> _startTimer() async {
-    _timer?.cancel();
-    // Start a new timer that repeats every x minutes
-    try{
-      _timer = Timer.periodic(Duration(minutes: Memory.PAGE_REFRESH_TIME_IN_MINUTES), (timer) {
-        print('-------------------------timer re started ');
-        _reloadOrders();
-      });
-    } catch (e){
-      print(e);
-    }
-
-
-
-  }
 
 
   @override

@@ -129,7 +129,6 @@ class ClientAddressListController extends ControllerModel {
       order.setOrderStatus(Memory.createOrderStatus);
     }
     DateTime? deliveryDateLocal = Memory.deliveryDateLocal;
-    DateTime orderCreatePageOpenedAtLocal = Memory.orderCreatePageOpenedAtDateTimeLocal;
     order.deliveredTime = RelativeTimeUtil.getStringFromLocalTimeForSql(deliveryDateLocal);
 
     if(isDeliveredOrder){

@@ -65,9 +65,9 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
     bool success = false;
 
 
-
+    late Connection conn;
     try {
-      final conn = await Connection.open(
+        conn = await Connection.open(
         Endpoint(
           host: host,
           database: dbName,
@@ -96,13 +96,14 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
 
       }
       print('affectedRows      ${result0.affectedRows}');
-      conn.close();
 
+      return success;
     } catch (e) {
       print('Error connecting to PostgresSQL: $e');
+      return success;
       // Return false or throw an exception as per your error handling strategy
     } finally{
-      return success;
+      await conn.close();
     }
 
   }
@@ -116,9 +117,9 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
     int dbPort = MemoryPanelSc.attendanceDbPort;
     String dbUser = MemoryPanelSc.attendanceDbUser;
     String dbPassword = MemoryPanelSc.attendanceDbPassword;
-
+    late Connection conn ;
     try {
-      final conn = await Connection.open(
+        conn = await Connection.open(
         Endpoint(
           host: host,
           database: dbName,
@@ -200,12 +201,14 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
       } else {
         return false;
       }
-      conn.close();
+
       return true;
     } catch (e) {
       print('Error connecting to PostgresSQL: $e');
       // Return false or throw an exception as per your error handling strategy
       return null;
+    } finally{
+      await conn.close();
     }
 
   }
@@ -262,7 +265,7 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
       // Return false or throw an exception as per your error handling strategy
       return null;
     } finally {
-      conn.close();
+      await conn.close();
     }
 
   }
@@ -278,10 +281,10 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
     String dbPassword = user.password ??'';
     bool success = false;
     String sectorIds = MemoryPanelSc.panelScConfig.sectorsIn ?? MemoryPanelSc.defaultPanelId;
-
-
+   
+    late Connection conn ;
     try {
-      final conn = await Connection.open(
+        conn = await Connection.open(
         Endpoint(
           host: host,
           database: dbName,
@@ -309,14 +312,6 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
           " and srmd_atendiendo='N' and a.srmd_starttime='$date' "
           " and srmd_sectores_id in($sectorIds);";
 
-      /*String query ="SELECT a.c_bpartner_id as c_bpartner_id,  c.name,  c.name2, "
-          "a.srmd_consultorios_id,  co.name as consultorio, srmd_llamar, srmd_atendiendo, "
-          "srmd_atendido, srmd_agendamedica_ID, srmd_starttime, srmd_endtime, srmd_sectores_id"
-          " FROM adempiere.srmd_agendamedica as a, adempiere.c_bpartner as c ,"
-          " srmd_consultorios as co where  a.c_bpartner_id=c.c_bpartner_id and"
-          " co.srmd_consultorios_id =a.srmd_consultorios_id and a.srmd_llamar='Y'"
-          " and a.srmd_atendiendo='N'";*/
-
       print('query $query');
       final result0 = await conn.execute(query);
       for (final row in result0) {
@@ -328,7 +323,6 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
         String? nameOwner ;
         if(row[2]==null){
           String? aux = row[1].toString();
-          String name = '';
           if(aux.contains(' ')){
             int totalIndex = 0;
             aux.split(' ').forEach((element) {
@@ -403,23 +397,14 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
           if (exist) MemoryPanelSc.newCallingTickets.removeAt(i);
         }
       }
-
-      conn.close();
-      /*bool exist = false;
-      if(MemoryPanelSc.inicialCallingTickets.where((element) => element.id==ticket.id).isNotEmpty){
-        exist = true;
-      }
-      if(!exist) MemoryPanelSc.inicialCallingTickets.add(ticket);*/
-
-
-
-
+      return success;
 
     } catch (e) {
       print('Error connecting to PostgresSQL: $e');
+      return success;
       // Return false or throw an exception as per your error handling strategy
     } finally{
-      return success;
+      await conn.close();
     }
 
   }
@@ -432,10 +417,9 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
     int dbPort = MemoryPanelSc.attendanceDbPort;
     String dbUser = MemoryPanelSc.attendanceDbUser;
     String dbPassword = MemoryPanelSc.attendanceDbPassword;
-    bool success = false;
-
+    late Connection conn ;
     try {
-      final conn = await Connection.open(
+        conn = await Connection.open(
         Endpoint(
           host: host,
           database: dbName,
@@ -448,7 +432,6 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
         // SSL and you should swap out the mode with `SslMode.verifyFull`.
         settings: ConnectionSettings(sslMode: SslMode.require),
       );
-      success = true;
       String posId = GetStorage().read(Memory.KEY_POS_ID) ?? '1';
       int? eventId = MemoryPanelSc.panelScConfig.eventId;
       if(eventId==null){
@@ -501,12 +484,14 @@ abstract class PanelControllerModel extends IdempiereControllerModel{
 
 
       }
-      conn.close();
+
       return events;
     } catch (e) {
       print('Error connecting to PostgresSQL: $e');
       // Return false or throw an exception as per your error handling strategy
       return events;
+    } finally{
+      await conn.close();
     }
 
   }

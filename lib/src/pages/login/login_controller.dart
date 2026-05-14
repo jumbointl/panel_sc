@@ -118,7 +118,7 @@ class LoginController extends ControllerModel{
         } else {
 
           saveUser(responseApi,password);
-          User myUser = getSavedUser();
+          getSavedUser();
 
           goToPanelScHomePage();
 

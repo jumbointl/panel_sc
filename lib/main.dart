@@ -49,7 +49,6 @@ class _MyAppState extends State<MyApp> {
 
     String? home =Memory.ROUTE_IDEMPIERE_LOGIN_PAGE;
     //String? home =MemorySol.ROUTE_VIDEO_PLAY_LIST_PAGE;
-    String appTitle =Messages.IDEMPIERE_APP_NAME;
     return GetMaterialApp(
       title: Messages.APP_NAME,
       debugShowCheckedModeBanner: false,

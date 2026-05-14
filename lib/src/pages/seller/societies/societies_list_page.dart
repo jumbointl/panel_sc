@@ -1,4 +1,5 @@
 
+import 'package:solexpress_panel_sc/src/widgets/safe_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:solexpress_panel_sc/src/data/messages.dart';
@@ -18,18 +19,11 @@ class SocietiesListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var screenWidth = MediaQuery.of(context).size.width;
-    bool isPortrait =  MediaQuery.of(context).orientation == Orientation.portrait;
-    bool isWideScreen = false;
-    if(screenWidth>=Memory.minimumWideScreenWidth){
-      isWideScreen = true;
-    }
-
     marginsHorizontal = 5;
     marginsHorizontal = con.getMarginsForMaximumColumns(context) ;
 
     return  Obx(()=>Scaffold(
-      bottomNavigationBar: _buttonNext(context),
+      bottomNavigationBar: SafeBottomBar(child: _buttonNext(context)),
       appBar: AppBar(
         backgroundColor: con.isDebitTransaction.value ? Memory.COLOR_IS_DEBIT_TRANSACTION
             : Memory.COLOR_IS_CREDIT_TRANSACTION,
@@ -109,9 +103,6 @@ class SocietiesListPage extends StatelessWidget {
 
   Widget _radioSelectorSociety(BuildContext context, Society society, int index) {
     double cWidth = con.getMaximumInputFieldWidth(context)-20;
-    String aux1 = society.configuration?.name ?? '';
-    String aux2 = '${society.configuration?.commission ?? ''}';
-    String aux ='$aux1  commission : $aux2';
 
     return Container(
       alignment: Alignment.topCenter,
@@ -156,22 +147,6 @@ class SocietiesListPage extends StatelessWidget {
 
     );
   }
-
-  Widget _textSelectSociety() {
-    return con.isLoading.value ? CircularProgressIndicator() : Container(
-      margin: EdgeInsets.only(top: 30, left: 30, right: 30),
-      alignment: Alignment.topCenter,
-      child: Text(
-        con.societyName.value !='' ? con.societyName.value : Messages.SELECT_A_CLIENT,
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 19,
-          fontWeight: FontWeight.bold
-        ),
-      ),
-    );
-  }
-
 
   Widget _getIsDebitTransaction(BuildContext context){
     return con.isLoading.value ? CircularProgressIndicator() : PreferredSize(

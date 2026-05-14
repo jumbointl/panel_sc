@@ -79,7 +79,6 @@ class VideoDownloadController extends IdempiereControllerModel {
 
     for (final localFile in localFiles) {
       print('File: ${localFile.path}');
-      String fileName = getFileNameFromUrl(localFile.path);
       if (!validFilePaths.contains(localFile.path)) {
         print('Deleting orphaned file: ${localFile.path}');
         await localFile.delete();

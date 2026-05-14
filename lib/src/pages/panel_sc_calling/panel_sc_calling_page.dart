@@ -180,7 +180,6 @@ class PanelScCallingPage extends StatelessWidget {
     String placeId = ticket.place?.id?.toString() ?? 'ID';
 
     double cardHeight = 100;
-    String date = ticket.calledTime ?? '';
     Color color = getWarningColor(ticket.department ?? Department(id: 0, name: 'NOT FOUND'));
     return GestureDetector(
       onTap: () {

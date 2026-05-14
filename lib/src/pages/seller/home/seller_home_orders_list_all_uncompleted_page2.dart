@@ -52,7 +52,6 @@ class SellerHomeOrdersListAllUncompletedPage2 extends OrderListPageModel{
   Color getWarningColor(Order order){
     Color barColor = Memory.BAR_BACKGROUND_COLOR;
     DateTime date = DateTime.parse(order.deliveredTime ?? '');
-    int days = RelativeTimeUtil.differenceToToday(date);
     bool b =(RelativeTimeUtil.differenceToToday(date)<0);
     if(b){
       barColor = Colors.white;

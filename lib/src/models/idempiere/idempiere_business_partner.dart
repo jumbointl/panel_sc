@@ -165,7 +165,6 @@ class IdempiereBusinessPartner extends IdempiereObject {
     isProspect = json['IsProspect'];
     sOCreditLimit = json['SO_CreditLimit'];
     sOCreditUsed = json['SO_CreditUsed'] == null ? null : double.tryParse(json['SO_CreditUsed'].toString());
-    var d = json['SO_CreditUsed'];
     acqusitionCost = json['AcqusitionCost'];
     potentialLifeTimeValue = json['PotentialLifeTimeValue'];
     cPaymentTermID = json['C_PaymentTerm_ID'] != null

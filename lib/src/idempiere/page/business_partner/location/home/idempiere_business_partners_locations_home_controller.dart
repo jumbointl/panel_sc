@@ -63,7 +63,6 @@ class IdempiereBusinessPartnerLocationsHomeController extends IdempiereFilterCre
       isLoading.value = false;
       if (fromJson == null ||  fromJson.records == null || fromJson.records is! List) return ;
 
-      List<IdempiereBusinessPartnerLocation> businessPartnerLocationRecords = IdempiereBusinessPartnerLocation.fromJsonList(fromJson.records); // Pass the 'records' list to fromJsonList
       print('-----------------------------------------------------------------');
       print('----------------------------page row count: ${fromJson.rowCount}');
       print('----------------------------records.length: ${fromJson.records?.length ?? 0}');

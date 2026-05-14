@@ -1,3 +1,4 @@
+import 'package:solexpress_panel_sc/src/widgets/safe_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:solexpress_panel_sc/src/data/messages.dart';
@@ -19,7 +20,7 @@ class AccountingHomePage extends StatelessWidget {
     isLoading = con.isLoading ;
     marginsHorizontal = con.getMarginsForMaximumColumns(context);
     return  Scaffold(
-      bottomNavigationBar: _buttonNext(context),
+      bottomNavigationBar: SafeBottomBar(child: _buttonNext(context)),
       appBar: AppBar(
         automaticallyImplyLeading: false,
         iconTheme: IconThemeData(
@@ -161,11 +162,5 @@ class AccountingHomePage extends StatelessWidget {
       ),
     );
   }
-
-  Widget _iconRefresh() {
-    return con.buttonReload();
-  }
-
-
 
 }

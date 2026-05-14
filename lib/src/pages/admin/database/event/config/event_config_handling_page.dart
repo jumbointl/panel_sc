@@ -2,6 +2,7 @@
 
 
 
+import 'package:solexpress_panel_sc/src/widgets/safe_bottom_bar.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -39,7 +40,7 @@ class EventConfigHandlingPage extends StatelessWidget {
         title: Text(Messages.CONFIG,style: TextStyle(color: Colors.white,
             fontSize: 20,fontWeight: FontWeight.bold),),
       ),
-      bottomNavigationBar: Obx(()=>createPage ? bottomCreateNavigationBar(context) :  bottomHandlingNavigationBar(context)),
+      bottomNavigationBar: SafeBottomBar(child: Obx(()=>createPage ? bottomCreateNavigationBar(context) :  bottomHandlingNavigationBar(context))),
       body: Obx(()=>SafeArea(child: _boxForm(context))),
     );
   }
@@ -618,58 +619,6 @@ class EventConfigHandlingPage extends StatelessWidget {
       ),
     );
   }
-  Widget _dropDownEventDate(List<String>  list) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.black, // Set border color to black
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: DropdownButton(
-          underline: Container(
-            alignment: Alignment.centerRight,
-            child: Icon(
-              Icons.arrow_drop_down_circle,
-              color: barColor,
-            ),
-          ),
-          elevation: 3,
-          isExpanded: true,
-          hint: Text(
-            Messages.SELECT_AN_OPTION,
-
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15
-            ),
-          ),
-          items: _dropDownEventDateItems(list),
-          value: controller.eventDate.value == '' ? null : controller.eventDate.value ,
-
-          onChanged: (option) {
-            //print('Opcion seleccionada ${option}');
-            controller.eventDate.value = option.toString() ;
-          },
-        ),
-      ),
-    );
-  }
-
-  List<DropdownMenuItem<String>> _dropDownEventDateItems(List<String> data) {
-    List<DropdownMenuItem<String>> list = [];
-    for (var data in data) {
-      list.add(DropdownMenuItem(
-        value: data,
-        child: Text(data),
-
-      ));
-    }
-
-    return list;
-  }
-
   Widget _dropDownActive(List<Active>  list) {
     return Container(
       //margin: EdgeInsets.only(left: 20, right: 20),
