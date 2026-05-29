@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:intl/intl.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:solexpress_panel_sc/src/data/messages.dart';
 import 'package:solexpress_panel_sc/src/models/order_status.dart';
@@ -28,6 +29,15 @@ class Memory {
     static const int SC_PANEL =1;
     static const int ALL_PANEL =3;
     static int TYPE_OF_PANEL = EVENT_PANEL;
+
+    // Se setea automáticamente en main() vía initAppVersion() leyendo
+    // PackageInfo (que toma version+build desde pubspec.yaml).
+    static String APP_NAME_WITH_VERSION = Messages.APP_NAME;
+
+    static Future<void> initAppVersion() async {
+      final info = await PackageInfo.fromPlatform();
+      APP_NAME_WITH_VERSION = 'V ${info.version}+${info.buildNumber}';
+    }
 
     // sin http://
     static final bool isIdempiereApp = true;

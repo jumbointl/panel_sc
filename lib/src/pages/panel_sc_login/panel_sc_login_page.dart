@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:solexpress_panel_sc/src/models/function_panel_sc.dart';
 import '../../data/memory.dart';
 import '../../data/memory_panel_sc.dart';
+import '../../widgets/safe_bottom_bar.dart';
 import 'panel_sc_login_controller.dart';
 
 import '../../data/messages.dart';
@@ -45,6 +46,19 @@ class PanelScLoginPage extends StatelessWidget {
             height: 50,
             child: _setCustomUrl(),
           ), */// Pass controller
+
+          bottomNavigationBar: SafeBottomBar(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  Memory.APP_NAME_WITH_VERSION,
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+              ),
+            ),
+          ),
 
           body: SafeArea(
               child: TabBarView(
