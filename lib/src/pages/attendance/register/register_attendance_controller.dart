@@ -10,6 +10,7 @@ import 'package:sqflite/sqflite.dart';
 import '../../../data/memory.dart';
 import '../../../data/memory_panel_sc.dart';
 import '../../../utils/sqflite/database_event_panel.dart';
+import '../../../utils/scan_feedback.dart';
 import '../common/panel_controller_model.dart'; // For LogicalKeyboardKey
 
 class RegisterAttendanceController extends PanelControllerModel {
@@ -179,6 +180,7 @@ class RegisterAttendanceController extends PanelControllerModel {
       return;
     }
     if(MemoryPanelSc.isValidCode(value)){
+      ScanFeedback.instance.ok(); // correct code received -> success beep
       int aux = MemoryPanelSc.panelScConfig.barcodeLength ?? MemoryPanelSc.barcodeLength;
       if(value.length>aux){
         value = value.substring(value.length-aux);
@@ -208,6 +210,8 @@ class RegisterAttendanceController extends PanelControllerModel {
 
 
       }
+    } else {
+      ScanFeedback.instance.error(); // incorrect code -> error tone
     }
   }
   Future<void> startTimerToSendAttendanceToServer() async {
