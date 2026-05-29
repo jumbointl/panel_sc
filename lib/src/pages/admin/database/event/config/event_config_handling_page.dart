@@ -577,7 +577,7 @@ class EventConfigHandlingPage extends StatelessWidget {
       showSelectedLabels: false,
       items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(icon: Icon(Icons.event, color: iconColor), label: Messages.SEARCH),
-              BottomNavigationBarItem(icon: Icon(Icons.settings, color: iconColor), label: Messages.SEARCH),
+              BottomNavigationBarItem(icon: Icon(Icons.settings, color: iconColor), label: Messages.CONFIG),
               BottomNavigationBarItem(icon: Icon(Icons.edit, color: iconColor), label: Messages.UPDATE),
 
             ],
