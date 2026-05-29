@@ -40,7 +40,7 @@ dependencies:
   carousel_slider: ^5.1.1
   confirm_dialog: ^1.0.4
   cupertino_icons: ^1.0.8
-  date_picker_plus: ^4.2.0
+  date_picker_plus: ^6.0.0
   device_info_plus: ^11.4.0
   dotted_border: ^2.1.0
   dropdown_button2: ^2.3.9
